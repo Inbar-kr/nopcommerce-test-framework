@@ -1,0 +1,28 @@
+INFO     root:driver_factory.py:15 Initializing WebDriver for chrome browser.
+INFO     WDM:logger.py:11 ====== WebDriver manager ======
+INFO     WDM:logger.py:11 Get LATEST chromedriver version for google-chrome
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): googlechromelabs.github.io:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://googlechromelabs.github.io:443 "GET /chrome-for-testing/latest-patch-versions-per-build.json HTTP/1.1" 200 8923
+INFO     WDM:logger.py:11 Get LATEST chromedriver version for google-chrome
+DEBUG    urllib3.connectionpool:connectionpool.py:1049 Starting new HTTPS connection (1): googlechromelabs.github.io:443
+DEBUG    urllib3.connectionpool:connectionpool.py:544 https://googlechromelabs.github.io:443 "GET /chrome-for-testing/latest-patch-versions-per-build.json HTTP/1.1" 200 8923
+INFO     WDM:logger.py:11 Driver [C:\Users\ענבר\.wdm\drivers\chromedriver\win64\131.0.6778.204\chromedriver-win32/chromedriver.exe] found in cache
+DEBUG    selenium.webdriver.common.service:service.py:215 Started executable: `C:\Users\ענבר\.wdm\drivers\chromedriver\win64\131.0.6778.204\chromedriver-win32/chromedriver.exe` in a child process with pid: 26868
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:310 POST http://localhost:52056/session {"capabilities": {"firstMatch": [{}], "alwaysMatch": {"browserName": "chrome", "pageLoadStrategy": "normal", "goog:chromeOptions": {"extensions": [], "args": []}}}}
+DEBUG    urllib3.connectionpool:connectionpool.py:241 Starting new HTTP connection (1): localhost:52056
+DEBUG    urllib3.connectionpool:connectionpool.py:544 http://localhost:52056 "POST /session HTTP/1.1" 200 0
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:326 Remote response: status=200 | data={"value":{"capabilities":{"acceptInsecureCerts":false,"browserName":"chrome","browserVersion":"131.0.6778.205","chrome":{"chromedriverVersion":"131.0.6778.204 (52183f9e99a61056f9b78535f53d256f1516f2a0-refs/branch-heads/6778_155@{#7})","userDataDir":"C:\\Users\\CC23~1\\AppData\\Local\\Temp\\scoped_dir26868_1809725556"},"fedcm:accounts":true,"goog:chromeOptions":{"debuggerAddress":"localhost:52061"},"networkConnectionEnabled":false,"pageLoadStrategy":"normal","platformName":"windows","proxy":{},"setWindowRect":true,"strictFileInteractability":false,"timeouts":{"implicit":0,"pageLoad":300000,"script":30000},"unhandledPromptBehavior":"dismiss and notify","webauthn:extension:credBlob":true,"webauthn:extension:largeBlob":true,"webauthn:extension:minPinLength":true,"webauthn:extension:prf":true,"webauthn:virtualAuthenticators":true},"sessionId":"fbd65e7b0c6dd0b3e48b5c919ca29947"}} | headers=HTTPHeaderDict({'Content-Length': '886', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:353 Finished Request
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:310 POST http://localhost:52056/session/fbd65e7b0c6dd0b3e48b5c919ca29947/timeouts {"implicit": 10000}
+DEBUG    urllib3.connectionpool:connectionpool.py:544 http://localhost:52056 "POST /session/fbd65e7b0c6dd0b3e48b5c919ca29947/timeouts HTTP/1.1" 200 0
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:326 Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:353 Finished Request
+INFO     root:driver_factory.py:36 WebDriver initialized successfully.
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:310 POST http://localhost:52056/session/fbd65e7b0c6dd0b3e48b5c919ca29947/window/maximize {}
+DEBUG    urllib3.connectionpool:connectionpool.py:544 http://localhost:52056 "POST /session/fbd65e7b0c6dd0b3e48b5c919ca29947/window/maximize HTTP/1.1" 200 0
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:326 Remote response: status=200 | data={"value":{"height":1416,"width":3456,"x":-8,"y":-8}} | headers=HTTPHeaderDict({'Content-Length': '52', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:353 Finished Request
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:310 DELETE http://localhost:52056/session/fbd65e7b0c6dd0b3e48b5c919ca29947 {}
+DEBUG    urllib3.connectionpool:connectionpool.py:544 http://localhost:52056 "DELETE /session/fbd65e7b0c6dd0b3e48b5c919ca29947 HTTP/1.1" 200 0
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:326 Remote response: status=200 | data={"value":null} | headers=HTTPHeaderDict({'Content-Length': '14', 'Content-Type': 'application/json; charset=utf-8', 'cache-control': 'no-cache'})
+DEBUG    selenium.webdriver.remote.remote_connection:remote_connection.py:353 Finished Request

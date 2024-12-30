@@ -1,0 +1,1 @@
+Registration attempt with one blank field was blocked as expected.
