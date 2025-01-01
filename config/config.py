@@ -14,7 +14,7 @@ class Config:
     EXPLICIT_WAIT = int(os.getenv("EXPLICIT_WAIT", 20))
 
     # Headless setting (for running tests without a UI)
-    HEADLESS = str_to_bool(os.getenv("HEADLESS", "True"))
+    HEADLESS = str_to_bool(os.getenv("HEADLESS", "False"))
 
     # Test data file path
     TEST_DATA_PATH = os.path.join(os.path.dirname(__file__), "testdata.json")

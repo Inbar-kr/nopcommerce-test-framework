@@ -1,7 +1,5 @@
-from selenium import webdriver
+import undetected_chromedriver as uc
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from webdriver_manager.chrome import ChromeDriverManager
 from config.config import Config
 import logging
 
@@ -14,24 +12,26 @@ class DriverFactory:
         browser = Config.BROWSER
         logging.info(f"Initializing WebDriver for {browser} browser.")
         if browser == "chrome":
-            return DriverFactory._get_chrome_driver()
+            return DriverFactory._get_undetected_chrome_driver()
         raise ValueError(f"Unsupported browser: {browser}")
 
     @staticmethod
-    def _get_chrome_driver():
-        """Set up Chrome WebDriver with options."""
-        chrome_options = Options()
+    def _get_undetected_chrome_driver():
+        """Set up Undetected-Chromedriver with options."""
+        chrome_options = uc.ChromeOptions()
 
-        """if Config.HEADLESS:
-            chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--disable-gpu")"""
+        if Config.HEADLESS:
+            # chrome_options.add_argument("--headless")
+            chrome_options.add_argument("--disable-gpu")
 
-        driver_path = ChromeDriverManager().install()
+        # Other recommended options for bot detection evasion
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
 
-        service = Service(driver_path)
-        driver = webdriver.Chrome(service=service, options=chrome_options)
+        driver = uc.Chrome(options=chrome_options, use_subprocess=True)
 
         driver.implicitly_wait(Config.IMPLICIT_WAIT)
 
-        logging.info("WebDriver initialized successfully.")
+        logging.info("Undetected-Chromedriver initialized successfully.")
         return driver

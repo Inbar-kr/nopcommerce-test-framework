@@ -1,0 +1,62 @@
+name: CI/CD Pipeline with Selenium Tests
+
+# Trigger workflow on push to the 'main' branch or pull requests to the 'main' branch
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# Define the jobs for the workflow
+jobs:
+  selenium-tests:
+    runs-on: windows-latest
+
+    # Set up job steps
+    steps:
+      # 1. Checkout the repository to get the code
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1  # Only fetch the latest commit to reduce checkout time
+
+      # 2. Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12.2'
+
+      # 3. Install dependencies from requirements.txt
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt  # Install Python dependencies for Selenium and pytest
+
+      # 4. Run Pytest tests
+      - name: Run Pytest tests
+        run: |
+          pytest --maxfail=5 --disable-warnings --alluredir=reports/allure-results  # Run tests and generate Allure results
+
+      # 5. Upload Allure test results (optional)
+      - name: Upload Allure Test Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: allure-results
+          path: reports/allure-results  # Upload the generated Allure report results
+
+      # 6. Upload pytest HTML report (optional)
+      - name: Upload Pytest HTML report
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-html-report
+          path: reports/pytest_html_report.html  # Upload the generated pytest HTML report
+
+      # 7. Upload logs for debugging (optional)
+      - name: Upload Logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs
+          path: reports/logs/  # Upload the log files for debugging
+
