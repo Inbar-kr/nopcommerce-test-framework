@@ -4,8 +4,6 @@ import logging
 from pages.base_page import BasePage
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.action_chains import ActionChains
-from utils.wait_util import WaitUtil
 
 class RegistrationPage(BasePage):
     # Locators for elements on the Registration page
@@ -37,38 +35,32 @@ class RegistrationPage(BasePage):
         logging.basicConfig(level=logging.INFO)
 
     def open_url(self):
-        """Open the registration page URL."""
         self.driver.get("https://demo.nopcommerce.com/register?returnUrl=%2F")
 
     def select_birth_date(self, day: str, month: str, year: str):
-        """Select day, month, and year values from the dropdowns."""
         self.logger.info(f"Selecting birth date: Day={day}, Month={month}, Year={year}")
         self.select_dropdown_value(self.BIRTH_DATE_DROPDOWNS['day'], day)
         self.select_dropdown_value(self.BIRTH_DATE_DROPDOWNS['month'], month)
         self.select_dropdown_value(self.BIRTH_DATE_DROPDOWNS['year'], year)
 
     def select_dropdown_value(self, dropdown_locator, value: str):
-        """Select a value from a dropdown."""
         dropdown = self.wait_for_element(dropdown_locator[0], dropdown_locator[1])
         select = Select(dropdown)
         select.select_by_visible_text(value)
         self.logger.info(f"Selected '{value}' in dropdown {dropdown_locator}")
 
     def enter_text(self, field_locator, text: str):
-        """Helper function to enter text into an input field."""
         self.logger.info(f"Entering text '{text}' into field {field_locator}")
         field = self.wait_for_element(field_locator[0], field_locator[1])
         field.clear()
         field.send_keys(text)
 
     def submit_registration_form(self):
-        """Submit the registration form."""
         self.logger.info("Submitting registration form.")
         self.click(*self.REGISTER_BUTTON)
         self.wait_for_element(*self.SUCCESS_MESSAGE)
 
     def click(self, by, value):
-        """Click on an element."""
         element = self.wait_for_element(by, value)
         if element:
             element.click()
@@ -76,13 +68,11 @@ class RegistrationPage(BasePage):
             self.logger.error(f"Element not found: {value}")
 
     def is_registration_successful(self):
-        """Check if the registration was successful by verifying the success message."""
         self.logger.info("Checking if registration was successful.")
         return self.is_element_present(*self.SUCCESS_MESSAGE) and \
                self.is_element_visible(*self.SUCCESS_MESSAGE)
 
     def is_element_present(self, by, value):
-        """Check if an element is present in the DOM."""
         try:
             element = self.driver.find_element(by, value)
             return element is not None
@@ -91,7 +81,6 @@ class RegistrationPage(BasePage):
             return False
 
     def is_element_visible(self, by, value):
-        """Check if an element is visible on the page."""
         try:
             self.wait_for_element(by, value)
             return True
@@ -99,8 +88,7 @@ class RegistrationPage(BasePage):
             self.logger.error(f"Error while checking visibility of element {value}: {str(e)}")
             return False
 
-    def wait_for_element(self, by, value, timeout=5):
-        """Wait for an element to appear."""
+    def wait_for_element(self, by, value, timeout=10):
         self.logger.info(f"Waiting for element {value} to appear.")
         try:
             element = WebDriverWait(self.driver, timeout).until(
@@ -112,7 +100,6 @@ class RegistrationPage(BasePage):
             return None
 
     def are_field_errors_displayed(self, error_locators):
-        """Check if error messages are displayed for each field."""
         self.logger.info("Checking if error messages are displayed for each field.")
         for error_locator in error_locators:
             if not self.is_element_visible(*error_locator):
@@ -121,7 +108,6 @@ class RegistrationPage(BasePage):
         return True
 
     def wait_for_placeholder(self, driver, field_locator, expected_placeholder, timeout=10):
-        """Wait for the placeholder to match the expected value."""
         try:
             element = WebDriverWait(driver, timeout).until(
                 lambda driver: driver.find_element(*field_locator)
@@ -141,7 +127,6 @@ class RegistrationPage(BasePage):
 
     def check_password_strength(self, password: str) -> str:
 
-        # Define the criteria for password strength
         length_check = len(password) >= 8
         lowercase_check = any(c.islower() for c in password)
         uppercase_check = any(c.isupper() for c in password)
@@ -159,7 +144,6 @@ class RegistrationPage(BasePage):
             return "Weak"
 
     def clear_error_messages(self):
-        """Clear error messages for all fields."""
         self.logger.info("Clearing error messages for all fields.")
         error_fields = [
             self.FIRST_NAME_ERROR,
@@ -179,31 +163,26 @@ class RegistrationPage(BasePage):
                 self.logger.error(f"Error while clearing error message for {error_field}: {str(e)}")
 
     def is_password_hidden(self):
-        """Check if the password field is hidden."""
         password_field = self.wait_for_element(*self.PASSWORD_FIELD)
         password_type = password_field.get_attribute("type")
         return password_type == "password"
 
     def is_confirm_password_hidden(self):
-        """Check if the confirm password field is hidden."""
         confirm_password_field = self.wait_for_element(*self.CONFIRM_PASSWORD_FIELD)
         confirm_password_type = confirm_password_field.get_attribute("type")
         return confirm_password_type == "password"
 
     def is_password_visible(self):
-        """Check if the password field is visible (type is 'text')."""
         password_field = self.wait_for_element(*self.PASSWORD_FIELD)
         password_type = password_field.get_attribute("type")
         return password_type == "text"
 
     def is_confirm_password_visible(self):
-        """Check if the confirm password field is visible (type is 'text')."""
         confirm_password_field = self.wait_for_element(*self.CONFIRM_PASSWORD_FIELD)
         confirm_password_type = confirm_password_field.get_attribute("type")
         return confirm_password_type == "text"
 
     def toggle_password_visibility(self):
-        """Toggle the visibility of the Password and Confirm Password fields."""
         password_field = self.wait_for_element(*self.PASSWORD_FIELD)
         confirm_password_field = self.wait_for_element(*self.CONFIRM_PASSWORD_FIELD)
 

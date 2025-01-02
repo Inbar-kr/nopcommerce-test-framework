@@ -1,5 +1,4 @@
 import undetected_chromedriver as uc
-from selenium.webdriver.chrome.service import Service
 from config.config import Config
 import logging
 

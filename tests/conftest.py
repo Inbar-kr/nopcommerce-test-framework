@@ -6,6 +6,9 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# Define the path for screenshots
+SCREENSHOT_DIR = os.path.join(os.path.dirname(__file__), 'screenshots')
+
 @pytest.fixture(scope="function")
 def driver():
     """Fixture for initializing WebDriver."""
@@ -14,12 +17,15 @@ def driver():
     yield driver
     driver.quit()
 
+
 @pytest.hookimpl(tryfirst=True)
 def pytest_runtest_makereport(item, call):
     """Attach screenshot on failure."""
     if call.excinfo is not None:
         driver = item.funcargs['driver']
-        screenshot_path = "screenshot.png"
+        screenshot_filename = "screenshot.png"
+        screenshot_path = os.path.join(SCREENSHOT_DIR, screenshot_filename)
+
+        os.makedirs(SCREENSHOT_DIR, exist_ok=True)
         driver.save_screenshot(screenshot_path)
-        allure.attach.file(screenshot_path, name="Registration Failure Screenshot",
-                           attachment_type=allure.attachment_type.PNG)
+        allure.attach.file(screenshot_path, name="Failure Screenshot", attachment_type=allure.attachment_type.PNG)

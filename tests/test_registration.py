@@ -12,28 +12,15 @@ from allure_commons.types import Severity
 
 @pytest.fixture(scope="module")
 def load_test_data():
-    """Fixture to load test data from the JSON file."""
     with open(Config.TEST_DATA_PATH, 'r') as f:
         return json.load(f)
 
 def generate_unique_email(base_email):
-    """Generate a unique email address."""
     email_prefix, email_domain = base_email.split("@")
     unique_email = f"{email_prefix}_{uuid.uuid4().hex[:8]}@{email_domain}"
     return unique_email
 
-def bypass_captcha(driver):
-    """Disable CAPTCHA using JavaScript by removing the iframe and bypassing token."""
-    WebDriverWait(driver, 10).until(
-        EC.presence_of_element_located((By.TAG_NAME, 'iframe'))
-    )  # Wait for the iframe to load
-    driver.execute_script("""
-        document.querySelectorAll('iframe').forEach(e => e.remove());
-        let captchaInput = document.querySelector('[name="recaptcha-token"]');
-        if (captchaInput) {
-            captchaInput.value = "bypass-captcha"; // Mock a valid token
-        }
-    """)
+
 
 @allure.epic("User Authentication")
 @allure.feature("Registration")
@@ -51,8 +38,6 @@ class TestUserRegistration:
 
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         mandatory_fields = {
             registration_page.FIRST_NAME_FIELD: test_data['first_name'],
@@ -88,8 +73,6 @@ class TestUserRegistration:
 
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         gender_field = registration_page.GENDER_MALE_RADIO_BUTTON if test_data['gender'].lower() == "male" \
                        else registration_page.GENDER_FEMALE_RADIO_BUTTON
@@ -127,8 +110,6 @@ class TestUserRegistration:
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
-        bypass_captcha(driver)
-
         registration_page.submit_registration_form()
 
         assert registration_page.are_field_errors_displayed([
@@ -153,8 +134,6 @@ class TestUserRegistration:
 
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         fields = {
             registration_page.FIRST_NAME_FIELD: test_data['first_name'],
@@ -187,8 +166,6 @@ class TestUserRegistration:
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
-        bypass_captcha(driver)
-
         registration_page.enter_text(registration_page.FIRST_NAME_FIELD, test_data['first_name'])
         registration_page.enter_text(registration_page.LAST_NAME_FIELD, test_data['last_name'])
         registration_page.enter_text(registration_page.EMAIL_FIELD, test_data['email'])
@@ -212,8 +189,6 @@ class TestUserRegistration:
 
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         fields = {
             registration_page.FIRST_NAME_FIELD: test_data['first_name'],
@@ -245,7 +220,6 @@ class TestUserRegistration:
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
-        bypass_captcha(driver)
 
         fields = {
             registration_page.FIRST_NAME_FIELD: test_data['first_name'],
@@ -269,11 +243,8 @@ class TestUserRegistration:
     @allure.label("Regression")
     @allure.description("This test verifies that all fields in the registration page have the correct placeholders.")
     def test_field_placeholders(self, driver):
-        """TC_RF_009: Test that all fields in the Register Account page have the correct placeholders."""
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         expected_placeholders = {
             registration_page.FIRST_NAME_FIELD: "First name",
@@ -342,8 +313,6 @@ class TestUserRegistration:
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
-        bypass_captcha(driver)
-
         mandatory_fields = [
             registration_page.FIRST_NAME_FIELD,
             registration_page.LAST_NAME_FIELD,
@@ -384,8 +353,6 @@ class TestUserRegistration:
     def test_register_account_no_newsletter(self, driver, load_test_data):
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         test_data = load_test_data["newsletter_no_registration"]
         unique_email = generate_unique_email(test_data['email'])
@@ -448,8 +415,6 @@ class TestUserRegistration:
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
-        bypass_captcha(driver)
-
         mandatory_fields = [
             (registration_page.FIRST_NAME_FIELD, test_data['first_name']),
             (registration_page.LAST_NAME_FIELD, test_data['last_name']),
@@ -495,8 +460,6 @@ class TestUserRegistration:
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
-        bypass_captcha(driver)
-
         fields_to_test = [
             (registration_page.FIRST_NAME_FIELD, "First name is required.", "", test_data['last_name'],
              test_data['email'], test_data['password'], test_data['confirm_password']),
@@ -540,8 +503,6 @@ class TestUserRegistration:
 
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
-
-        bypass_captcha(driver)
 
         registration_page.enter_text(registration_page.PASSWORD_FIELD, test_data['password'])
         registration_page.enter_text(registration_page.CONFIRM_PASSWORD_FIELD, test_data['confirm_password'])
