@@ -1,1 +1,0 @@
-All mandatory fields correctly reject only spaces and display error messages.
