@@ -1,1 +1,0 @@
-Registration with 'No' for Newsletter was successful, and the status is correctly set.
