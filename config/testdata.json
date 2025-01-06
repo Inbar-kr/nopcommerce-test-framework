@@ -37,9 +37,27 @@
     }
   },
   "product_search": {
-    "valid_product": "Laptop",
-    "invalid_product": "NonExistentProduct123"
+    "valid_product": "Lenovo Thinkpad X1 Carbon Laptop",
+    "invalid_product": "NonExistentProduct"
   },
+  "products_search": {
+    "valid_product": "Notebooks",
+    "invalid_product": "NonExistentProducts"
+  },
+  "product_description_search": {
+    "product_description_text": "digital photography"
+  },
+  "multiple_products_search": {
+    "multiple_products": "book"
+  },
+  "sort_options": [
+    "Position",
+    "Price: Low to High",
+    "Price: High to Low",
+    "Name: A to Z",
+    "Name: Z to A",
+    "Created on"
+  ],
   "checkout_data": {
     "valid_address": {
       "address": "123 Test St",

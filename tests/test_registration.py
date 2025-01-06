@@ -20,8 +20,6 @@ def generate_unique_email(base_email):
     unique_email = f"{email_prefix}_{uuid.uuid4().hex[:8]}@{email_domain}"
     return unique_email
 
-
-
 @allure.epic("User Authentication")
 @allure.feature("Registration")
 class TestUserRegistration:
@@ -426,7 +424,6 @@ class TestUserRegistration:
         for field_locator, field_value in mandatory_fields:
             registration_page.enter_text(field_locator, field_value)
 
-        # Check password strength
         assert registration_page.check_password_strength(test_data['password']) == "Strong", \
             f"Expected strong password, but got {registration_page.check_password_strength(test_data['password'])}"
 
@@ -473,9 +470,7 @@ class TestUserRegistration:
              test_data['last_name'], test_data['email'], test_data['password'], "")
         ]
 
-        # Iterate over each field and test with blank value
         for field_locator, expected_error_message, first_name, last_name, email, password, confirm_password in fields_to_test:
-            # Clear previous error messages if any
             registration_page.clear_error_messages()
 
             registration_page.enter_text(registration_page.FIRST_NAME_FIELD, first_name)
