@@ -20,14 +20,18 @@ class SearchPage(BasePage):
     PRODUCTS_CONTAINER = (By.CLASS_NAME, "products-container")
     ITEM_GRID = (By.CLASS_NAME, "item-grid")
     PRODUCT_ITEM = (By.CLASS_NAME, "product-item")
+
     CATEGORY_DROPDOWN = (By.ID, "cid")
     SORT_BY_DROPDOWN = (By.ID, "products-orderby")
     DISPLAY_DROPDOWN = (By.ID, "products-pagesize")
+
     GRID_VIEW = (By.XPATH, "//a[@data-viewmode='grid']")
     LIST_VIEW = (By.XPATH, "//a[@data-viewmode='list']")
+
     ADD_TO_CART_BUTTON = (By.CLASS_NAME, "button-2.product-box-add-to-cart-button")
     ADD_TO_WISHLIST_BUTTON = (By.CLASS_NAME, "button-2.add-to-wishlist-button")
     ADD_TO_COMPARE_BUTTON = (By.CLASS_NAME, "button-2.add-to-compare-list-button")
+
     COMPARE_PRODUCT_LINK = (By.LINK_TEXT, "Compare products list")
     COMPARE_PRODUCT_ERROR = (By.CLASS_NAME, "no-data")
 
@@ -76,6 +80,7 @@ class SearchPage(BasePage):
     def wait_for_element(self, locator, timeout=10):
         self.logger.info(f"Waiting for element: {locator}")
         return WebDriverWait(self.driver, timeout).until(EC.element_to_be_clickable(locator))
+
     def is_element_visible(self, locator, timeout=10):
         try:
             element = WebDriverWait(self.driver, timeout).until(EC.visibility_of_element_located(locator))

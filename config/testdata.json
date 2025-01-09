@@ -79,5 +79,26 @@
     "password": "pa$$word123",
     "confirm_password": "pa$$word123",
     "newsletter": "no"
+  },
+  "checkout_fields": {
+    "mandatory_billing_address_section": {
+      "country_dropdown": "United States",
+      "state_dropdown": "California",
+      "city": "Los Angeles",
+      "address1": "1234 Elm St",
+      "zip_code": "90001",
+      "phone_number": "+1 (555) 123-4567"
+    },
+    "all_billing_address_section": {
+      "address1": "1234 Elm St",
+      "address2": "Suite 567",
+      "city": "Los Angeles",
+      "company": "Company Name",
+      "country_dropdown": "United States",
+      "state_dropdown": "California",
+      "zip_code": "12345",
+      "phone_number": "555-1234",
+      "fax_number": "555-5678"
+    }
   }
 }

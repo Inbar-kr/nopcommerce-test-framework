@@ -14,7 +14,6 @@ from tests.test_login import TestUserLogin
 
 @pytest.fixture(scope="module")
 def load_test_data():
-    """Fixture to load test data from the JSON file."""
     with open(Config.TEST_DATA_PATH, 'r') as f:
         return json.load(f)
 

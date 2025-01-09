@@ -18,10 +18,13 @@ class LoginPage(BasePage):
     SUBMIT_LOGIN_BUTTON = (By.XPATH, "//button[@class='button-1 login-button']")
     ERROR_MESSAGE = (By.CLASS_NAME, "message-error.validation-summary-errors")
     REGISTER_BUTTON = (By.XPATH, "//button[@class='button-1 register-button']")
+
     SITEMAP_LINK = (By.LINK_TEXT, "Sitemap")
     MY_ACCOUNT_LINK = (By.CLASS_NAME, "ico-account")
+
     CHANGE_PASSWORD_LINK = (By.XPATH, "//a[@href='/customer/changepassword']")
     CHANGE_PASSWORD_BUTTON = (By.XPATH, "//button[@class='button-1 change-password-button']")
+
     OLD_PASSWORD_FIELD = (By.ID, "OldPassword")
     NEW_PASSWORD_FIELD = (By.ID, "NewPassword")
     CONFIRM_PASSWORD_FIELD = (By.ID, "ConfirmNewPassword")
@@ -77,13 +80,11 @@ class LoginPage(BasePage):
             return False
 
     def get_element(self, locator):
-        """Returns a WebElement after waiting for it to be visible."""
         return WebDriverWait(self.driver, 10).until(
             EC.visibility_of_element_located(locator)
         )
 
     def wait_for_placeholder(self, driver, field_locator, expected_placeholder):
-        """Waits for the element to be visible and validates the placeholder text."""
         try:
             WebDriverWait(driver, 10).until(EC.visibility_of_element_located(field_locator))
             field_element = driver.find_element(*field_locator)

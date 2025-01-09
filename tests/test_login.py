@@ -426,13 +426,11 @@ class TestUserLogin:
     def test_login_session_after_browser_restart(self, driver, load_test_data):
         # Helper methods to save and load cookies
         def save_cookies(driver, filepath):
-            """Save cookies to a file."""
             cookies = driver.get_cookies()
             with open(filepath, 'w') as cookie_file:
                 json.dump(cookies, cookie_file)
 
         def load_cookies(driver, filepath):
-            """Load cookies from a file."""
             with open(filepath, 'r') as cookie_file:
                 cookies = json.load(cookie_file)
                 for cookie in cookies:

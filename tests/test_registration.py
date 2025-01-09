@@ -266,7 +266,6 @@ class TestUserRegistration:
     @allure.label("Regression")
     @allure.description("This test verifies that all mandatory fields in the registration form are marked with a red '*' symbol to indicate their importance.")
     def test_mandatory_fields_marked_with_asterisk(self, driver):
-        """TC_RF_010: Test that all mandatory fields in the Register Account page are marked with a red '*' symbol."""
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
@@ -306,8 +305,6 @@ class TestUserRegistration:
     @allure.label("Regression")
     @allure.description("This test ensures that mandatory fields in the registration form do not accept only spaces and display appropriate validation error messages.")
     def test_mandatory_fields_accept_only_spaces(self, driver):
-        """TC_RF_012: Test that mandatory fields in the Register Account page do not accept only spaces."""
-
         registration_page = RegistrationPage(driver)
         registration_page.open_url()
 
@@ -403,8 +400,6 @@ class TestUserRegistration:
     @allure.label("Functional")
     @allure.description("This test validates password strength while registering.")
     def test_register_account_with_strong_password(self, driver, load_test_data):
-        """TC_RF_017: Validate Registering an Account with strong password."""
-
         test_data = load_test_data['user_registration']['valid_user']
 
         unique_email = generate_unique_email(test_data['email'])
@@ -447,8 +442,6 @@ class TestUserRegistration:
     @allure.label("Functional")
     @allure.description("This test validates the behavior when one mandatory field is left blank during registration.")
     def test_register_account_with_blank_field(self, driver, load_test_data):
-        """TC_RF_019: Validate Registering an Account with one blank field"""
-
         test_data = load_test_data['user_registration']['valid_user']
 
         unique_email = generate_unique_email(test_data['email'])
@@ -492,8 +485,6 @@ class TestUserRegistration:
     @allure.label("Functional")
     @allure.description("This test validates the toggling of the password visibility in the 'Password' and 'Confirm Password' fields during account registration.")
     def test_password_visibility_toggle(self, driver, load_test_data):
-        """TC_RF_020: Validate the Password text entered into the 'Password' and 'Password Confirm' fields of 'Register Account' functionality is toggled to hide its visibility"""
-
         test_data = load_test_data['user_registration']['valid_user']
 
         registration_page = RegistrationPage(driver)
