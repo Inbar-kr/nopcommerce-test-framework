@@ -9,7 +9,7 @@
   "all_fields": {
     "first_name": "Jane",
     "last_name": "Doe",
-    "email": "Janendoe@example.com",
+    "email": "janendoe@example.com",
     "company": "TestCompany",
     "password": "Password123!",
     "confirm_password": "Password123!",
@@ -89,16 +89,53 @@
       "zip_code": "90001",
       "phone_number": "+1 (555) 123-4567"
     },
+    "mandatory_shipping_address_section": {
+      "country_dropdown": "United States",
+      "state_dropdown": "New York",
+      "city": "Buffalo",
+      "address1": "1234 Parkside Ave",
+      "zip_code": "50001",
+      "phone_number": "+1 (555) 123-4567"
+    },
     "all_billing_address_section": {
-      "address1": "1234 Elm St",
-      "address2": "Suite 567",
-      "city": "Los Angeles",
       "company": "Company Name",
       "country_dropdown": "United States",
       "state_dropdown": "California",
+      "city": "Los Angeles",
+      "address1": "1234 Elm St",
+      "address2": "Suite 567",
+      "zip_code": "12345",
+      "phone_number": "555-1234",
+      "fax_number": "555-5678"
+    },
+    "full_billing_address_section": {
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "email": "janendoe@example.com",
+      "company": "Company Name",
+      "country_dropdown": "United States",
+      "state_dropdown": "California",
+      "city": "Los Angeles",
+      "address1": "1234 Elm St",
+      "address2": "Suite 567",
       "zip_code": "12345",
       "phone_number": "555-1234",
       "fax_number": "555-5678"
     }
+  },
+  "payment_methods": {
+    "default_method": "Check / Money Order",
+    "valid_methods": [
+      "Check / Money Order",
+      "card"
+    ]
+  },
+  "shipping_methods": {
+    "default_method": "ground",
+    "valid_methods": [
+      "ground",
+      "next_day",
+      "second_day"
+    ]
   }
 }
