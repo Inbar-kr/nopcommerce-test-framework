@@ -35,6 +35,7 @@ class CheckoutPage(BasePage):
     # Guest / registration / login - page
     CHECKOUT_AS_GUEST_BUTTON = (By.CLASS_NAME, "button-1.checkout-as-guest-button")
     REGISTER_BUTTON = (By.CLASS_NAME, "button-1.register-button")
+    REGISTER_CONTINUE_BUTTON = (By.CLASS_NAME, "button-1.register-continue-button")
 
     EMAIL_FIELD = (By.ID, "Email")
     EMAIL_ERROR = (By.ID, "Email-error")
@@ -90,6 +91,12 @@ class CheckoutPage(BasePage):
         self.click(self.AGREE_TERMS_CHECKBOX)
         self.click(self.CHECKOUT_BUTTON)
 
+    def continue_to_checkout(self):
+        self.click(self.REGISTER_CONTINUE_BUTTON)
+        self.click(self.SHOPPING_CART_BUTTON)
+        self.click(self.AGREE_TERMS_CHECKBOX)
+        self.click(self.CHECKOUT_BUTTON)
+
     def hover_cart_button(self):
         shopping_cart_button = self.wait_for_element(self.SHOPPING_CART_BUTTON)
         cart_hover_button = self.wait_for_element(self.CART_HOVER_BUTTON)
@@ -103,6 +110,9 @@ class CheckoutPage(BasePage):
 
     def proceed_as_guest(self):
         self.click(self.CHECKOUT_AS_GUEST_BUTTON)
+
+    def proceed_to_register(self):
+        self.click(self.REGISTER_BUTTON)
 
     def register_account(self, email, password):
         self.enter_text(self.EMAIL_FIELD, email)

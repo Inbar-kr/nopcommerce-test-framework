@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver import ActionChains, Keys
 
 from pages.checkout.confirm_order_section import ConfirmOrderSection
+from tests.test_registration import TestUserRegistration
 from tests.test_search import TestUserSearch
 from tests.test_login import TestUserLogin
 from pages.checkout.checkout_page import CheckoutPage
@@ -429,6 +430,53 @@ class TestCheckoutPage:
 
         confirm_order.complete_order()
 
+    @allure.story("TC_CO_015: Validate Checkout as New User")
+    @allure.severity(Severity.CRITICAL)
+    @allure.label("Regression")
+    @allure.description(
+        "This test validates the process of completing a checkout as a new user by registering, ensuring all required sections display correctly and order is placed."
+    )
+    def test_checkout_as_new_user(self, driver, load_test_data):
+        search_test = TestUserSearch()
+        search_test.test_valid_product(driver, load_test_data)
 
+        checkout_page = CheckoutPage(driver)
+        checkout_page.add_product_to_cart()
+        checkout_page.proceed_to_register()
+
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        checkout_page.continue_to_checkout()
+
+        billing_address_section = checkout_page.get_billing_address_section()
+        billing_address_section.enter_mandatory_billing_address(load_test_data)
+        time.sleep(2)
+
+        shipping_method_section = checkout_page.get_shipping_method_section()
+        shipping_method_section.select_shipping_method("ground")
+
+        payment_method_section = checkout_page.get_payment_method_section()
+        payment_method_section.select_payment_method("Check / Money Order")
+
+        payment_information_section = checkout_page.get_payment_information_section()
+        payment_information_section.click(payment_information_section.CONTINUE_BUTTON)
+
+        # checkout_page.verify_billing_and_confirmation_match()
+
+        confirm_order = ConfirmOrderSection(driver)
+        confirm_order.confirm_order()
+
+        confirm_order.complete_order()
+
+    @allure.story("TC_CO_016: Checkout by Signing in as Returning Customer")
+    @allure.severity(Severity.CRITICAL)
+    @allure.label("Regression")
+    @allure.description(
+        "This test validates the process of completing a checkout by logging in as a returning customer, ensuring all required sections display correctly and the order is placed."
+    )
+    def test_checkout_as_returning_customer(self, driver, load_test_data):
+        search_test = TestUserSearch()
+        search_test.test_valid_product(driver, load_test_data)
 
 
