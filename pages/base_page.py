@@ -1,9 +1,10 @@
 from selenium.common import TimeoutException
-from selenium.webdriver.common.by import By
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import logging
+from utils.wait_util import WaitUtil
+
 
 class BasePage:
     def __init__(self, driver):
@@ -11,22 +12,24 @@ class BasePage:
         self.logger = logging.getLogger(self.__class__.__name__)
         logging.basicConfig(level=logging.INFO)
 
-
     def open_url(self, url):
         self.driver.get(url)
         self.logger.info(f"Opened URL: {url}")
 
     def enter_text(self, locator, text: str):
         self.logger.info(f"Entering text '{text}' into field: {locator}")
-        field = self.wait_for_element(locator)
-        field.clear()
-        field.send_keys(text)
-        self.logger.info(f"Text entered into field: {locator}")
+        field = self.wait_for_element(*locator)
+        if field:
+            field.clear()
+            field.send_keys(text)
+            self.logger.info(f"Text entered into field: {locator}")
+        else:
+            self.logger.error(f"Field {locator} not found. Cannot enter text.")
 
     def click(self, locator):
         if isinstance(locator, tuple):
             by, value = locator
-            element = self.wait_for_element((by, value))
+            element = self.wait_for_element(by, value)
         else:
             element = self.wait_for_element(locator)
 
@@ -64,22 +67,28 @@ class BasePage:
         except Exception as e:
             self.logger.error(f"Error scrolling element into view: {str(e)}")
 
-    def wait_for_element(self, locator, timeout=10):
+    def wait_for_element(self, by, value=None, timeout=10):
+        self.logger.info(f"Waiting for element {value} to appear.")
         try:
             element = WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_element_located(locator)
+                EC.visibility_of_element_located((by, value))
             )
+            self.logger.info(f"Element {value} found: {element}")
             return element
-        except TimeoutException:
-            self.logger.error(f"Timeout waiting for element: {locator}")
-            raise TimeoutException(f"Timeout waiting for element: {locator}")
+        except Exception as e:
+            self.logger.error(f"Error while waiting for element {value}: {str(e)}")
+            return None
 
-    def is_element_visible(self, locator, timeout=10):
+    def wait_for_element_to_be_visible(self, locator, timeout=10):
+        self.logger.info(f"Waiting for element to be visible: {locator}")
+        return WaitUtil.wait_for_element_to_be_visible(self.driver, locator, timeout)
+
+    def is_element_visible(self, by, value):
         try:
-            elements = WebDriverWait(self.driver, timeout).until(EC.presence_of_all_elements_located(locator))
-            return any(element.is_displayed() for element in elements)
-        except:
-            self.logger.error(f"Element not visible: {locator}")
+            self.wait_for_element(by, value)
+            return True
+        except Exception as e:
+            self.logger.error(f"Error while checking visibility of element {value}: {str(e)}")
             return False
 
     def wait_for_placeholder(self, driver, field_locator, expected_placeholder, timeout=10):
@@ -104,22 +113,30 @@ class BasePage:
             f"Expected placeholder for field '{field_locator}' to be '{expected_placeholder}', but found '{actual_placeholder}'"
         self.logger.info(f"Placeholder for field '{field_locator}' is correct: '{actual_placeholder}'")
 
-
     def select_dropdown_option(self, dropdown_locator, option_text: str):
         try:
-            dropdown_element = self.wait_for_element(dropdown_locator)
+            dropdown_element = self.wait_for_element(dropdown_locator[0], dropdown_locator[1])
             WebDriverWait(self.driver, 10).until(EC.element_to_be_clickable(dropdown_element))
 
             select = Select(dropdown_element)
 
-            self.logger.info(f"Dropdown options before selecting: {[option.text for option in select.options]}")
+            available_options = [option.text for option in select.options]
+            self.logger.info(f"Available options in dropdown {dropdown_locator}: {available_options}")
 
             select.select_by_visible_text(option_text)
-            self.logger.info(f"Selected '{option_text}' from dropdown.")
+            self.logger.info(f"Selected '{option_text}' from dropdown {dropdown_locator}")
 
         except Exception as e:
-            self.logger.error(f"Error selecting option '{option_text}' from dropdown: {str(e)}")
+            self.logger.error(f"Error selecting option '{option_text}' from dropdown {dropdown_locator}: {str(e)}")
             raise
+
+    def are_field_errors_displayed(self, error_locators):
+        self.logger.info("Checking if error messages are displayed for each field.")
+        for error_locator in error_locators:
+            if not self.is_element_visible(*error_locator):
+                self.logger.error(f"Error message not displayed for {error_locator}")
+                return False
+        return True
 
     def get_elements(self, locator):
         elements = self.driver.find_elements(*locator)
@@ -177,4 +194,3 @@ class BasePage:
         except TimeoutException:
             self.logger.error(f"Element with locator {locator} not found within {timeout} seconds.")
             raise TimeoutException(f"Element with locator {locator} not found within {timeout} seconds.")
-

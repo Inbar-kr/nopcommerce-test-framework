@@ -1,14 +1,10 @@
-from selenium.webdriver import ActionChains, Keys
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from pages.checkout.shipping_address_section import ShippingAddressSection
-from pages.checkout.billing_address_section import BillingAddressSection
-from pages.checkout.confirm_order_section import ConfirmOrderSection
 from pages.checkout.test_data_provider import TestDataProvider
 import logging
 from pages.base_page import BasePage
-from utils.wait_util import WaitUtil
 
 class CheckoutPage(BasePage):
     # # Main locators for the checkout process
@@ -18,7 +14,6 @@ class CheckoutPage(BasePage):
     SHOPPING_CART_BUTTON = (By.CLASS_NAME, "ico-cart")
     CART_HOVER_BUTTON = (By.CSS_SELECTOR, "a.ico-cart")
     GO_TO_CART_BUTTON = (By.CSS_SELECTOR, "#flyout-cart .button-1.cart-button")
-
 
     # Shopping cart page
     QUANTITY_PRODUCT_UP = (By.ID, "quantity-up-11228")

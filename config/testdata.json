@@ -3,8 +3,8 @@
     "first_name": "Jane",
     "last_name": "Doe",
     "email": "johndoe@example.com",
-    "password": "pa$$word123",
-    "confirm_password": "pa$$word123"
+    "password": "Pa$$word123",
+    "confirm_password": "Pa$$word123"
   },
   "all_fields": {
     "first_name": "Jane",

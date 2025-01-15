@@ -11,7 +11,6 @@ SCREENSHOT_DIR = os.path.join(os.path.dirname(__file__), 'screenshots')
 
 @pytest.fixture(scope="function")
 def driver():
-    """Fixture for initializing WebDriver."""
     driver = DriverFactory.get_driver()
     driver.maximize_window()
     yield driver
@@ -20,7 +19,6 @@ def driver():
 
 @pytest.hookimpl(tryfirst=True)
 def pytest_runtest_makereport(item, call):
-    """Attach screenshot on failure."""
     if call.excinfo is not None:
         driver = item.funcargs['driver']
         screenshot_filename = "screenshot.png"

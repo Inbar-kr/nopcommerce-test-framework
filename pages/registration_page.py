@@ -1,7 +1,8 @@
+import uuid
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import Select
 import logging
 from pages.base_page import BasePage
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -23,7 +24,7 @@ class RegistrationPage(BasePage):
     COMPANY_NAME_FIELD = (By.ID, "Company")
     NEWSLETTER_CHECKBOX_FIELD = (By.ID, "Newsletter")
     PASSWORD_FIELD = (By.ID, "Password")
-    PASSWORD_ERROR = (By.ID, "Password-error")
+    PASSWORD_ERROR = (By.XPATH, "//span[@data-valmsg-for='Password']")
     CONFIRM_PASSWORD_FIELD = (By.ID, "ConfirmPassword")
     CONFIRM_PASSWORD_ERROR = (By.ID, "ConfirmPassword-error")
     REGISTER_BUTTON = (By.XPATH, '//*[@id="register-button"]')
@@ -34,99 +35,23 @@ class RegistrationPage(BasePage):
         self.logger = logging.getLogger("RegistrationPage")
         logging.basicConfig(level=logging.INFO)
 
-    def open_url(self):
-        self.driver.get("https://demo.nopcommerce.com/register?returnUrl=%2F")
+    def open_url(self, url="https://demo.nopcommerce.com/register?returnUrl=%2F"):
+        self.driver.get(url)
 
-    def select_birth_date(self, day: str, month: str, year: str):
-        self.logger.info(f"Selecting birth date: Day={day}, Month={month}, Year={year}")
-        self.select_dropdown_value(self.BIRTH_DATE_DROPDOWNS['day'], day)
-        self.select_dropdown_value(self.BIRTH_DATE_DROPDOWNS['month'], month)
-        self.select_dropdown_value(self.BIRTH_DATE_DROPDOWNS['year'], year)
-
-    def select_dropdown_value(self, dropdown_locator, value: str):
-        dropdown = self.wait_for_element(dropdown_locator[0], dropdown_locator[1])
-        select = Select(dropdown)
-        select.select_by_visible_text(value)
-        self.logger.info(f"Selected '{value}' in dropdown {dropdown_locator}")
-
-    def enter_text(self, field_locator, text: str):
-        self.logger.info(f"Entering text '{text}' into field {field_locator}")
-        field = self.wait_for_element(field_locator[0], field_locator[1])
-        field.clear()
-        field.send_keys(text)
+    def generate_unique_email(self, base_email):
+        email_prefix, email_domain = base_email.split("@")
+        unique_email = f"{email_prefix}_{uuid.uuid4().hex[:8]}@{email_domain}"
+        return unique_email
 
     def submit_registration_form(self):
         self.logger.info("Submitting registration form.")
-        self.click(*self.REGISTER_BUTTON)
-        self.wait_for_element(*self.SUCCESS_MESSAGE)
-
-    def click(self, by, value):
-        element = self.wait_for_element(by, value)
-        if element:
-            element.click()
-        else:
-            self.logger.error(f"Element not found: {value}")
+        self.click(self.REGISTER_BUTTON)
 
     def is_registration_successful(self):
         self.logger.info("Checking if registration was successful.")
-        return self.is_element_present(*self.SUCCESS_MESSAGE) and \
-               self.is_element_visible(*self.SUCCESS_MESSAGE)
-
-    def is_element_present(self, by, value):
-        try:
-            element = self.driver.find_element(by, value)
-            return element is not None
-        except Exception as e:
-            self.logger.error(f"Element {value} not found: {str(e)}")
-            return False
-
-    def is_element_visible(self, by, value):
-        try:
-            self.wait_for_element(by, value)
-            return True
-        except Exception as e:
-            self.logger.error(f"Error while checking visibility of element {value}: {str(e)}")
-            return False
-
-    def wait_for_element(self, by, value, timeout=10):
-        self.logger.info(f"Waiting for element {value} to appear.")
-        try:
-            element = WebDriverWait(self.driver, timeout).until(
-                EC.visibility_of_element_located((by, value))
-            )
-            return element
-        except Exception as e:
-            self.logger.error(f"Error while waiting for element {value}: {str(e)}")
-            return None
-
-    def are_field_errors_displayed(self, error_locators):
-        self.logger.info("Checking if error messages are displayed for each field.")
-        for error_locator in error_locators:
-            if not self.is_element_visible(*error_locator):
-                self.logger.error(f"Error message not displayed for {error_locator}")
-                return False
-        return True
-
-    def wait_for_placeholder(self, driver, field_locator, expected_placeholder, timeout=10):
-        try:
-            element = WebDriverWait(driver, timeout).until(
-                lambda driver: driver.find_element(*field_locator)
-            )
-            actual_placeholder = element.get_attribute("placeholder")
-
-            if actual_placeholder == expected_placeholder:
-                self.logger.info(f"Placeholder for {field_locator} is correct: '{expected_placeholder}'")
-            else:
-                self.logger.error(
-                    f"Expected placeholder '{expected_placeholder}', but got '{actual_placeholder}' for {field_locator}.")
-                return False
-        except Exception as e:
-            self.logger.error(f"Error occurred while checking placeholder for {field_locator}: {e}")
-            return False
-        return True
+        return self.is_element_visible(*self.SUCCESS_MESSAGE)
 
     def check_password_strength(self, password: str) -> str:
-
         length_check = len(password) >= 8
         lowercase_check = any(c.islower() for c in password)
         uppercase_check = any(c.isupper() for c in password)
@@ -182,6 +107,15 @@ class RegistrationPage(BasePage):
         confirm_password_type = confirm_password_field.get_attribute("type")
         return confirm_password_type == "text"
 
+    # To use
+    def validate_password_visibility(self, is_visible):
+        if is_visible:
+            assert self.is_password_visible(), "Password field should be visible."
+            assert self.is_confirm_password_visible(), "Confirm password field should be visible."
+        else:
+            assert self.is_password_hidden(), "Password field should be hidden."
+            assert self.is_confirm_password_hidden(), "Confirm password field should be hidden."
+
     def toggle_password_visibility(self):
         password_field = self.wait_for_element(*self.PASSWORD_FIELD)
         confirm_password_field = self.wait_for_element(*self.CONFIRM_PASSWORD_FIELD)
@@ -194,3 +128,259 @@ class RegistrationPage(BasePage):
             self.driver.execute_script("arguments[0].setAttribute('type', 'password');", confirm_password_field)
 
         self.logger.info("Password visibility toggled.")
+
+    def fill_fields(self, fields):
+        for field, value in fields.items():
+            self.logger.info(f"Entering value '{value}' in field '{field}'")
+            self.enter_text(field, value)
+
+    def fill_mandatory_fields(self, test_data):
+        self.logger.info("Filling mandatory fields in the registration form.")
+
+        mandatory_fields = {
+            self.FIRST_NAME_FIELD: test_data['first_name'],
+            self.LAST_NAME_FIELD: test_data['last_name'],
+            self.EMAIL_FIELD: test_data['email'],
+            self.PASSWORD_FIELD: test_data['password'],
+            self.CONFIRM_PASSWORD_FIELD: test_data['confirm_password']
+        }
+
+        self.fill_fields(mandatory_fields)
+
+        self.click(self.REGISTER_BUTTON)
+
+    def fill_all_fields(self, test_data):
+        self.logger.info("Filling all fields in the registration form.")
+
+        gender_field = self.select_gender(test_data['gender'])
+        self.click(gender_field)
+
+        all_fields = {
+            self.FIRST_NAME_FIELD: test_data['first_name'],
+            self.LAST_NAME_FIELD: test_data['last_name'],
+            self.EMAIL_FIELD: test_data['email'],
+            self.COMPANY_NAME_FIELD: test_data['company'],
+            self.PASSWORD_FIELD: test_data['password'],
+            self.CONFIRM_PASSWORD_FIELD: test_data['confirm_password']
+        }
+
+        self.fill_fields(all_fields)
+
+        self.logger.info(f"Selecting birth date: {test_data['birth_day']}-{test_data['birth_month']}-{test_data['birth_year']}")
+        self.select_dropdown_option(self.BIRTH_DATE_DROPDOWNS['day'], test_data['birth_day'])
+        self.select_dropdown_option(self.BIRTH_DATE_DROPDOWNS['month'], test_data['birth_month'])
+        self.select_dropdown_option(self.BIRTH_DATE_DROPDOWNS['year'], test_data['birth_year'])
+
+        if test_data['newsletter'].lower() == "yes":
+            self.click(self.NEWSLETTER_CHECKBOX_FIELD)
+        else:
+            self.click(self.NEWSLETTER_CHECKBOX_FIELD)
+
+        self.click(self.REGISTER_BUTTON)
+
+    def select_gender(self, gender):
+        gender_value = 'male' if gender.lower() == "male" else 'female'
+        self.logger.info(f"Selected gender: {gender_value}")
+        return self.GENDER_MALE_RADIO_BUTTON if gender.lower() == "male" else self.GENDER_FEMALE_RADIO_BUTTON
+
+    def get_mandatory_fields(self):
+        return [
+            self.FIRST_NAME_FIELD,
+            self.LAST_NAME_FIELD,
+            self.EMAIL_FIELD,
+            self.PASSWORD_FIELD,
+            self.CONFIRM_PASSWORD_FIELD
+        ]
+
+    def get_error_mandatory_fields(self):
+        return [
+            self.FIRST_NAME_ERROR,
+            self.LAST_NAME_ERROR,
+            self.EMAIL_ERROR,
+            self.PASSWORD_ERROR,
+            self.CONFIRM_PASSWORD_ERROR
+        ]
+
+    def fill_form_with_mismatched_passwords(self, test_data):
+        fields = {
+            self.FIRST_NAME_FIELD: test_data['first_name'],
+            self.LAST_NAME_FIELD: test_data['last_name'],
+            self.EMAIL_FIELD: test_data['email'],
+            self.PASSWORD_FIELD: test_data['password'],
+            self.CONFIRM_PASSWORD_FIELD: "DifferentPassword123"
+        }
+
+        self.fill_fields(fields)
+
+        self.submit_registration_form()
+
+    def verify_error_fields_displayed(self, error_fields):
+
+        self.logger.info(f"Verifying visibility of error fields: {error_fields}")
+        for error_field in error_fields:
+            assert self.is_element_visible(*error_field), f"{error_field} mismatch error not displayed."
+
+    def fill_form_with_invalid_email(self, test_data):
+        invalid_email = "invalid-email.com"
+
+        fields = {
+            self.FIRST_NAME_FIELD: test_data['first_name'],
+            self.LAST_NAME_FIELD: test_data['last_name'],
+            self.EMAIL_FIELD: invalid_email,
+            self.PASSWORD_FIELD: test_data['password'],
+            self.CONFIRM_PASSWORD_FIELD: "DifferentPassword123"
+        }
+
+        self.fill_fields(fields)
+
+        self.submit_registration_form()
+
+    def fill_form_with_keyboard_keys(self, test_data):
+        mandatory_fields = {
+            self.FIRST_NAME_FIELD: test_data['first_name'],
+            self.LAST_NAME_FIELD: test_data['last_name'],
+            self.EMAIL_FIELD: test_data['email'],
+            self.PASSWORD_FIELD: test_data['password'],
+            self.CONFIRM_PASSWORD_FIELD: test_data['confirm_password']
+        }
+
+        for field, value in mandatory_fields.items():
+            input_field = self.wait_for_element(*field)
+            input_field.send_keys(value)
+            input_field.send_keys(Keys.TAB)
+
+        confirm_password_field = self.wait_for_element(*self.CONFIRM_PASSWORD_FIELD)
+        confirm_password_field.send_keys(Keys.ENTER)
+
+        self.logger.info("Mandatory fields filled and form submitted using keyboard keys.")
+
+    def validate_placeholders(self):
+        expected_placeholders = {
+            self.FIRST_NAME_FIELD: "First name",
+            self.LAST_NAME_FIELD: "Last name",
+            self.EMAIL_FIELD: "Email",
+            self.COMPANY_NAME_FIELD: "Company",
+            self.PASSWORD_FIELD: "Password",
+            self.CONFIRM_PASSWORD_FIELD: "Confirm password"
+        }
+
+        all_placeholders_valid = True
+
+        for field_locator, expected_placeholder in expected_placeholders.items():
+            field = self.wait_for_element(field_locator, timeout=10)
+
+            if field:
+                actual_placeholder = field.get_attribute("placeholder")
+                print(
+                    f"Field: {field_locator}, Expected: '{expected_placeholder}', Actual: '{actual_placeholder}'")  # Debugging line
+                if actual_placeholder != expected_placeholder:
+                    all_placeholders_valid = False
+            else:
+                all_placeholders_valid = False
+
+        return all_placeholders_valid
+
+    def validate_asterisk(self):
+        mandatory_fields = {
+            self.FIRST_NAME_FIELD: "First Name",
+            self.LAST_NAME_FIELD: "Last Name",
+            self.EMAIL_FIELD: "Email",
+            self.PASSWORD_FIELD: "Password",
+            self.CONFIRM_PASSWORD_FIELD: "Confirm Password"
+        }
+
+        all_fields_valid = True
+
+        for field_locator, field_name in mandatory_fields.items():
+            field_label = self.wait_for_element(By.XPATH, f"//label[@for='{field_locator[1]}']")
+            if not field_label:
+                print(f"Label for {field_name} not found!")
+                all_fields_valid = False
+                continue
+
+            try:
+                asterisk = field_label.find_element(By.XPATH, ".//*[contains(@class, 'required')]")
+                color = asterisk.value_of_css_property("color")
+                print(f"Asterisk color for {field_name}: {color}")
+
+                if not asterisk.is_displayed() or color != "rgba(255, 0, 0, 1)":
+                    print(f"Mandatory field {field_name} is not marked with a red '*' symbol.")
+                    all_fields_valid = False
+            except Exception as e:
+                print(f"Error locating asterisk for {field_name}: {str(e)}")
+                all_fields_valid = False
+
+        # Return whether all fields were validated successfully
+        return all_fields_valid
+    def validate_spaces(self):
+        mandatory_fields = self.get_mandatory_fields()
+
+        for field_locator in mandatory_fields:
+            self.enter_text(field_locator, "     ")
+
+        self.submit_registration_form()
+
+        error_fields = [
+            self.FIRST_NAME_ERROR,
+            self.LAST_NAME_ERROR,
+            self.EMAIL_ERROR,
+            self.PASSWORD_ERROR,
+            self.CONFIRM_PASSWORD_ERROR
+        ]
+
+        assert self.are_field_errors_displayed(error_fields), \
+            "Validation error messages are not displayed for fields with only spaces."
+
+        print("All mandatory fields correctly reject only spaces and display error messages.")
+
+    def validate_password_and_registration(self, password, error_locators):
+        password_strength = self.check_password_strength(password)
+        self.logger.info(f"Password strength: {password_strength}")
+
+        if password_strength != "Strong":
+            self.logger.error(f"Expected strong password, but got {password_strength}")
+            return False
+
+        if self.is_registration_successful():
+            self.logger.info(f"Registration with strong password {password} was successful.")
+            return True
+        else:
+            self.logger.error("Registration failed. Checking for field errors.")
+            self.verify_error_fields_displayed(error_locators)
+            return False
+
+    def validate_field_and_check_error(self, field_locator, expected_error_message, first_name, last_name,
+                                       email, password, confirm_password):
+        self.clear_error_messages()
+
+        self.enter_text(self.FIRST_NAME_FIELD, first_name)
+        self.enter_text(self.LAST_NAME_FIELD, last_name)
+        self.enter_text(self.EMAIL_FIELD, email)
+        self.enter_text(self.PASSWORD_FIELD, password)
+        self.enter_text(self.CONFIRM_PASSWORD_FIELD, confirm_password)
+
+        self.submit_registration_form()
+
+        error_locators = [(field_locator, expected_error_message)]
+        assert self.are_field_errors_displayed(error_locators), \
+            f"Expected error message '{expected_error_message}' for field {field_locator} but it was not displayed."
+
+    def blank_fields_and_validate_errors(self, test_data):
+        fields_to_test = [
+            (self.FIRST_NAME_FIELD, "First name is required.", "", test_data['last_name'],
+             test_data['email'], test_data['password'], test_data['confirm_password']),
+            (self.LAST_NAME_FIELD, "Last name is required.", test_data['first_name'], "",
+             test_data['email'], test_data['password'], test_data['confirm_password']),
+            (self.EMAIL_FIELD, "Email is required.", test_data['first_name'], test_data['last_name'], "",
+             test_data['password'], test_data['confirm_password']),
+            (self.PASSWORD_FIELD, "Password is required.", test_data['first_name'], test_data['last_name'],
+             test_data['email'], "", test_data['confirm_password']),
+            (self.CONFIRM_PASSWORD_FIELD, "Confirm Password is required.", test_data['first_name'],
+             test_data['last_name'], test_data['email'], test_data['password'], "")
+        ]
+
+        for field_locator, expected_error_message, first_name, last_name, email, password, confirm_password in fields_to_test:
+            self.validate_field_and_check_error(field_locator, expected_error_message, first_name, last_name, email,
+                                                password, confirm_password)
+
+

@@ -2,19 +2,11 @@ import time
 import pytest
 import json
 import allure
-import logging
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver import ActionChains, Keys
-
 from pages.checkout.confirm_order_section import ConfirmOrderSection
 from tests.test_registration import TestUserRegistration
 from tests.test_search import TestUserSearch
 from tests.test_login import TestUserLogin
 from pages.checkout.checkout_page import CheckoutPage
-from pages.checkout.billing_address_section import BillingAddressSection
-from pages.checkout.test_data_provider import TestDataProvider
 from config.config import Config
 from allure_commons.types import Severity
 
@@ -33,8 +25,6 @@ class TestCheckoutPage:
     @allure.description(
         "This test validates that clicking on 'Checkout' header option navigates the user to an empty 'Shopping Cart' page.")
     def test_checkout_navigation_empty_cart(self, driver, load_test_data):
-        from pages.checkout.checkout_page import CheckoutPage
-
         checkout_page = CheckoutPage(driver)
         checkout_page.open_url()
 
