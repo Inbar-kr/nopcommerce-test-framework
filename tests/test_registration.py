@@ -1,6 +1,5 @@
 import pytest
 import json
-import logging
 from pages.registration_page import RegistrationPage
 from config.config import Config
 import allure
@@ -32,6 +31,11 @@ class TestUserRegistration:
 
         registration_page.fill_mandatory_fields(test_data)
 
+        if registration_page.is_registration_successful():
+            registration_page.logger.info("Registration successful. Success message displayed.")
+        else:
+            registration_page.logger.error("Registration failed. Success message not displayed.")
+
         assert registration_page.is_registration_successful(), "Registration failed. Success message not displayed."
 
     @allure.story("TC_RF_002: Validate 'Thank you for registering' email is sent to the registered email address as a confirmation for registering the account")
@@ -54,6 +58,11 @@ class TestUserRegistration:
         registration_page.open_url()
 
         registration_page.fill_all_fields(test_data)
+
+        if registration_page.is_registration_successful():
+            registration_page.logger.info("Registration successful. Success message displayed.")
+        else:
+            registration_page.logger.error("Registration failed. Success message not displayed.")
 
         assert registration_page.is_registration_successful(), "Registration failed. Success message not displayed."
 
@@ -93,6 +102,9 @@ class TestUserRegistration:
             registration_page.CONFIRM_PASSWORD_ERROR
         ]
         registration_page.verify_error_fields_displayed(error_fields)
+        registration_page.logger.info(f"Verified error fields displayed: {error_fields}")
+
+        assert registration_page.are_field_errors_displayed(error_fields), "Error fields not displayed as expected."
 
     @allure.story("TC_RF_006: Test registration with an already registered email address")
     @allure.severity(Severity.CRITICAL)
@@ -111,10 +123,10 @@ class TestUserRegistration:
         assert is_error_displayed, "Expected 'Email already in use' error message is not displayed."
 
         if is_error_displayed:
-            logging.info(
+            registration_page.logger.info(
                 "Registration attempt with an already registered email address correctly displays the error message.")
         else:
-            logging.error("Error message for already registered email was not displayed.")
+            registration_page.logger.error("Error message for already registered email was not displayed.")
 
     @allure.story("TC_RF_007: Test registration with an invalid email address")
     @allure.severity(Severity.CRITICAL)
@@ -133,9 +145,9 @@ class TestUserRegistration:
         assert is_error_displayed, "Expected 'Invalid email address' error message not displayed."
 
         if is_error_displayed:
-            logging.info("Invalid email registration correctly displays the error message for the email field.")
+            registration_page.logger.info("Invalid email registration correctly displays the error message for the email field.")
         else:
-            logging.error("Error message for invalid email address was not displayed.")
+            registration_page.logger.error("Error message for invalid email address was not displayed.")
 
     @allure.story("TC_RF_008: Test registering an account using keyboard keys")
     @allure.severity(Severity.NORMAL)
@@ -157,9 +169,9 @@ class TestUserRegistration:
         assert is_registration_successful, "Registration failed. Success message not displayed."
 
         if is_registration_successful:
-            logging.info("Registration completed successfully using keyboard keys.")
+            registration_page.logger.info("Registration completed successfully using keyboard keys.")
         else:
-            logging.error("Registration attempt failed with keyboard input.")
+            registration_page.logger.error("Registration attempt failed with keyboard input.")
 
     @allure.story("TC_RF_009: Test that all fields in the Register Account page have the correct placeholders")
     @allure.severity(Severity.MINOR)
@@ -174,9 +186,9 @@ class TestUserRegistration:
         assert placeholders_are_correct, "One or more fields have incorrect placeholders."
 
         if placeholders_are_correct:
-            logging.info("All form fields have the correct placeholders.")
+            registration_page.logger.info("All form fields have the correct placeholders.")
         else:
-            logging.error("Some form fields have incorrect placeholders.")
+            registration_page.logger.error("Some form fields have incorrect placeholders.")
 
     @allure.story("TC_RF_010: Test that all mandatory fields in the Register Account page are marked with a red '*' symbol")
     @allure.severity(Severity.NORMAL)
@@ -188,9 +200,12 @@ class TestUserRegistration:
 
         validation_result = registration_page.validate_asterisk()
 
-        assert validation_result, "Not all mandatory fields are correctly marked with a red '*' symbol."
+        if validation_result:
+            registration_page.logger.info("All mandatory fields are correctly marked with a red '*' symbol.")
+        else:
+            registration_page.logger.error("Not all mandatory fields are correctly marked with a red '*' symbol.")
 
-        logging.info("All mandatory fields are correctly marked with a red '*' symbol.")
+        assert validation_result, "Not all mandatory fields are correctly marked with a red '*' symbol."
 
     @allure.story("TC_RF_011: Test password stored in the Database")
     @allure.severity(Severity.CRITICAL)
@@ -211,7 +226,7 @@ class TestUserRegistration:
 
         assert spaces_are_invalid, "Mandatory fields accepted only spaces as valid input."
 
-        logging.info("Mandatory fields correctly reject input with only spaces.")
+        registration_page.logger.info("Mandatory fields correctly reject input with only spaces.")
 
     @allure.story("TC_RF_013: Test Registering without providing required information")
     @allure.severity(Severity.CRITICAL)
@@ -244,7 +259,7 @@ class TestUserRegistration:
         assert "Your registration completed" in success_message_text, \
             f"Unexpected success message: {success_message_text}"
 
-        logging.info("Registration with 'No' for Newsletter was successful, and the status is correctly set.")
+        registration_page.logger.info("Registration with 'No' for Newsletter was successful, and the status is correctly set.")
 
     @allure.story("TC_RF_015: Validate Registering an Account and checking for email confirmation.")
     @allure.severity(Severity.NORMAL)
@@ -280,7 +295,7 @@ class TestUserRegistration:
 
         is_password_valid = registration_page.validate_password_and_registration(test_data['password'], error_locators)
         assert is_password_valid, "Password validation or registration failed."
-        logging.info("Password strength validation and registration with a strong password were successful.")
+        registration_page.logger.info("Password strength validation and registration with a strong password were successful.")
 
     @allure.story("TC_RF_018: Validate Registering an Account with one blank field")
     @allure.severity(Severity.NORMAL)
@@ -322,4 +337,4 @@ class TestUserRegistration:
         assert registration_page.is_password_hidden(), "Password field is unexpectedly visible after second toggle."
         assert registration_page.is_confirm_password_hidden(), "Confirm password field is unexpectedly visible after second toggle."
 
-        print("Password visibility toggle test passed successfully.")
+        registration_page.logger.info("Password visibility toggle test passed successfully.")

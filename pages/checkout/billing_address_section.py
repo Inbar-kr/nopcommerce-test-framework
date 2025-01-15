@@ -24,34 +24,6 @@ class BillingAddressSection(BasePage):
     BACK_SHIPPING_LINK = (By.CLASS_NAME, "back-link")
     CONTINUE_BUTTON = (By.CLASS_NAME, "button-1.new-address-next-step-button")
 
-    """def enter_all_billing_address(self, load_test_data):
-        billing_data = load_test_data["all_billing_address_section"]
-
-        # Check if the fields are empty before entering the data
-        if not self.get_text_value(self.FIRST_NAME_FIELD):
-            self.enter_text(self.FIRST_NAME_FIELD, billing_data["first_name"])
-        if not self.get_text_value(self.LAST_NAME_FIELD):
-            self.enter_text(self.LAST_NAME_FIELD, billing_data["last_name"])
-        if not self.get_text_value(self.EMAIL_FIELD):
-            self.enter_text(self.EMAIL_FIELD, billing_data["email"])
-        if not self.get_text_value(self.COUNTRY_DROPDOWN):
-            self.select_dropdown_option(self.COUNTRY_DROPDOWN, billing_data["country_dropdown"])
-        if not self.get_text_value(self.STATE_DROPDOWN):
-            self.select_dropdown_option(self.STATE_DROPDOWN, billing_data["state_dropdown"])
-        if not self.get_text_value(self.CITY_FIELD):
-            self.enter_text(self.CITY_FIELD, billing_data["city"])
-        if not self.get_text_value(self.ADDRESS1_FIELD):
-            self.enter_text(self.ADDRESS1_FIELD, billing_data["address1"])
-        if not self.get_text_value(self.ADDRESS2_FIELD):
-            self.enter_text(self.ADDRESS1_FIELD, billing_data["address2"])
-        if not self.get_text_value(self.ZIP_CODE_FIELD):
-            self.enter_text(self.ZIP_CODE_FIELD, billing_data["zip_code"])
-        if not self.get_text_value(self.PHONE_NUMBER_FIELD):
-            self.enter_text(self.PHONE_NUMBER_FIELD, billing_data["phone_number"])
-        if not self.get_text_value(self.FAX_NUMBER_FIELD):
-            self.enter_text(self.FAX_NUMBER_FIELD, billing_data["fax_number"])
-
-        self.click(self.CONTINUE_BUTTON)"""
 
     def enter_mandatory_billing_address(self, load_test_data):
         billing_data = load_test_data["checkout_fields"]["mandatory_billing_address_section"]

@@ -1,10 +1,11 @@
+import pyperclip
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from tests.test_registration import TestUserRegistration
 import logging
 from pages.base_page import BasePage
-from utils.wait_util import WaitUtil
 
 class LoginPage(BasePage):
     # Locators for elements on the Login page
@@ -52,7 +53,7 @@ class LoginPage(BasePage):
         return password_field.get_attribute("type") == "text"
 
     def toggle_password_visibility(self):
-        password_field = self.wait_for_element(self.PASSWORD_FIELD)
+        password_field = self.wait_for_element(self.PASSWORD_FIELD, timeout=10)
 
         if password_field.get_attribute("type") == "password":
             self.driver.execute_script("arguments[0].setAttribute('type', 'text');", password_field)
@@ -82,5 +83,272 @@ class LoginPage(BasePage):
         password_field = self.get_element(self.PASSWORD_FIELD)
         password_field.send_keys(Keys.CONTROL, 'c')
         self.logger.info("Pressed Ctrl+C to attempt to copy the password text.")
+        
+    def Navigation_from_login_page(self, driver):
+        self.click(LoginPage.LOGIN_BUTTON)
+
+        self.click(LoginPage.REGISTER_BUTTON)
+
+        assert driver.current_url == "https://demo.nopcommerce.com/register?returnUrl=%2F", \
+            "User was not navigated to the Register Account page."
+
+        driver.back()
+
+        # Click on 'Sitemap' link (or any other page link from the Login page)
+        self.click(LoginPage.SITEMAP_LINK)
+
+        assert driver.current_url == "https://demo.nopcommerce.com/sitemap", \
+            "User was not navigated to the Sitemap page."
+
+    def login_user(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        test_data = load_test_data['mandatory_fields']
+
+        if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
+            self.click(self.LOGOUT_BUTTON)
+
+        self.click(self.LOGIN_BUTTON)
+        self.enter_text(self.EMAIL_FIELD, test_data['email'])
+        self.enter_text(self.PASSWORD_FIELD, test_data['password'])
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
+        assert self.is_element_visible(By.CLASS_NAME,
+                                       self.MY_ACCOUNT_LINK[1]), "Login failed. User account/dashboard not displayed."
+        self.logger.info("Login successful.")
+
+    def logout_user(self):
+        locator_strategy, locator_value = self.LOGOUT_BUTTON
+
+        if self.is_element_visible(locator_strategy, locator_value):
+            self.click(self.LOGOUT_BUTTON)
+            self.logger.info("Logged out successfully.")
+        else:
+            self.logger.warning("Logout button is not visible; user might already be logged out.")
+
+    def invalid_login_user(self, load_test_data):
+        test_data = load_test_data["invalid_user"]
+
+        self.open_url()
+
+        self.enter_text(self.EMAIL_FIELD, test_data["username"])
+        self.enter_text(self.PASSWORD_FIELD, test_data["password"])
+
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        self.wait_for_element_to_be_visible(self.ERROR_MESSAGE)
+
+        self.logger.info("Attempted login with invalid credentials.")
+
+    def login_with_invalid_email(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        test_data = load_test_data['mandatory_fields']
+
+        invalid_email_data = {"username": "invalidemail@example.com"}
+
+        if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
+            self.click(self.LOGOUT_BUTTON)
+
+        self.click(self.LOGIN_BUTTON)
+        self.enter_text(self.EMAIL_FIELD, invalid_email_data['username'])
+        self.enter_text(self.PASSWORD_FIELD, test_data['password'])
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        self.wait_for_element_to_be_visible(self.ERROR_MESSAGE)
+        assert self.is_element_visible(By.CLASS_NAME, self.ERROR_MESSAGE[1]), "Login failed with invalid email. Error message not displayed."
+
+        self.logger.info("Attempted login with invalid email.")
+
+    def login_with_invalid_password(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        test_data = load_test_data['mandatory_fields']
+
+        invalid_password_data = {"password": "InvalidPassword123!"}
+
+        if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
+            self.click(self.LOGOUT_BUTTON)
+
+        self.click(self.LOGIN_BUTTON)
+        self.enter_text(self.EMAIL_FIELD, test_data['email'])
+        self.enter_text(self.PASSWORD_FIELD, invalid_password_data['password'])
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        self.wait_for_element_to_be_visible(self.ERROR_MESSAGE)
+        assert self.is_element_visible(By.CLASS_NAME, self.ERROR_MESSAGE[1]), "Login failed with invalid password. Error message not displayed."
+
+        self.logger.info("Attempted login with invalid password.")
+
+    def login_without_credentials(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
+            self.click(self.LOGOUT_BUTTON)
+
+        self.click(self.LOGIN_BUTTON)
+        self.enter_text(self.EMAIL_FIELD, '')
+        self.enter_text(self.PASSWORD_FIELD, '')
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
+        assert self.is_element_visible(By.CLASS_NAME,
+                                       self.MY_ACCOUNT_LINK[1]), "Login failed. User account/dashboard not displayed."
+        self.logger.info("Login successful.")
+
+    def login_with_keyboard_keys(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        test_data = load_test_data['mandatory_fields']
+
+        if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
+            self.click(self.LOGOUT_BUTTON)
+
+        self.click(self.LOGIN_BUTTON)
+        email_field = self.wait_for_element(*self.EMAIL_FIELD)
+        email_field.send_keys(test_data['email'])
+        email_field.send_keys(Keys.TAB)
+
+        password_field = self.wait_for_element(*self.PASSWORD_FIELD)
+        password_field.send_keys(test_data['password'])
+        password_field.send_keys(Keys.TAB)
+
+        submit_button = self.wait_for_element(*self.SUBMIT_LOGIN_BUTTON)
+        submit_button.send_keys(Keys.ENTER)
+
+        self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
+        assert self.is_element_visible(*self.MY_ACCOUNT_LINK), "Login failed. User account/dashboard not displayed."
+        self.logger.info("Login successful using keyboard keys.")
+
+    def validate_placeholders(self, driver):
+        expected_placeholders = {
+            self.EMAIL_FIELD: "Email",
+            self.PASSWORD_FIELD: "Password"
+        }
+
+        for field_locator, expected_placeholder in expected_placeholders.items():
+            field = self.wait_for_element(field_locator, timeout=10)
+            if field:
+                self.wait_for_placeholder(driver, field_locator, expected_placeholder)
+            else:
+                print(f"Field {field_locator} not found!")
+        self.logger.info("All fields have the correct placeholders.")
+
+    def password_copying(self, load_test_data):
+        test_data = load_test_data["valid_user"]
+
+        password_text = test_data["password"]
+        self.enter_text(self.PASSWORD_FIELD, password_text)
+
+        self.select_password_text_and_right_click()
+        self.copy_from_context_menu()
+
+        clipboard_content = pyperclip.paste()
+        assert clipboard_content != password_text, "Password text was unexpectedly copied using the right-click menu."
+
+        self.select_password_text()
+        self.press_ctrl_c()
+
+        clipboard_content = pyperclip.paste()
+        assert clipboard_content != password_text, "Password text was unexpectedly copied using Ctrl+C."
+
+        self.logger.info("Attempted to copy the password using the right-click menu or the Ctrl+C shortcut.")
+
+    def password_page_source(self, driver, load_test_data):
+        test_data = load_test_data["valid_user"]
+
+        password_text = test_data["password"]
+        self.enter_text(self.PASSWORD_FIELD, password_text)
+
+        page_source = driver.page_source
+        assert password_text not in page_source, \
+            "Password text was unexpectedly visible in the page source before login."
+
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        page_source = driver.page_source
+        assert password_text not in page_source, \
+            "Password text was unexpectedly visible in the page source after login."
+
+        self.logger.info("Attempted to see the password in the page source")
+
+    def change_password_page(self, driver, load_test_data):
+        self.login_user(driver, load_test_data)
+
+        test_data = load_test_data["mandatory_fields"]
+        new_password = "NewPassword123!"
+
+        self.click(self.MY_ACCOUNT_LINK)
+        self.click(self.CHANGE_PASSWORD_LINK)
+        self.enter_text(self.OLD_PASSWORD_FIELD, test_data['password'])
+        self.enter_text(self.NEW_PASSWORD_FIELD, new_password)
+        self.enter_text(self.CONFIRM_PASSWORD_FIELD, new_password)
+        self.click(self.CHANGE_PASSWORD_BUTTON)
+
+        WebDriverWait(driver, 10).until(EC.visibility_of_element_located(self.PASSWORD_CHANGE_POPUP))
+        popup_element = driver.find_element(*self.PASSWORD_CHANGE_POPUP)
+        popup_element.click()
+        WebDriverWait(driver, 10).until_not(EC.visibility_of_element_located(self.PASSWORD_CHANGE_POPUP))
+
+        if self.is_element_visible(self.LOGOUT_BUTTON[0], self.LOGOUT_BUTTON[1]):
+            WebDriverWait(driver, 10).until(EC.element_to_be_clickable((self.LOGOUT_BUTTON[0], self.LOGOUT_BUTTON[1])))
+            self.click(self.LOGOUT_BUTTON)
+
+        # Login with old password, which should fail
+        self.login_with_password(test_data['email'], test_data['password'], expect_success=False)
+
+        # Login with new password, which should pass
+        self.login_with_password(test_data['email'], new_password, expect_success=True)
+
+        self.logger.info("Attempted to change the password then Login with the new password")
+
+    def login_with_password(self, email, password, expect_success=True):
+        self.click(self.LOGIN_BUTTON)
+        self.enter_text(self.EMAIL_FIELD, email)
+        self.enter_text(self.PASSWORD_FIELD, password)
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        if expect_success:
+            assert self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK), \
+                "Login failed. User account/dashboard not displayed after password change."
+            self.logger.info("Login successful with new password.")
+        else:
+            assert self.is_element_visible(self.ERROR_MESSAGE), \
+                "User was able to login with old password after password change."
+            self.logger.info("Login failed with old password as expected.")
+
+    def ui_of_login_page(self):
+        # Validate that all UI elements are visible on the Login page
+        assert self.is_element_visible(LoginPage.LOGIN_FORM_FIELDS[0],
+                                       LoginPage.LOGIN_FORM_FIELDS[1]), "Login form is not visible."
+        assert self.is_element_visible(LoginPage.EMAIL_FIELD[0],
+                                       LoginPage.EMAIL_FIELD[1]), "Email field is not visible."
+        assert self.is_element_visible(LoginPage.PASSWORD_FIELD[0],
+                                       LoginPage.PASSWORD_FIELD[1]), "Password field is not visible."
+        assert self.is_element_visible(LoginPage.REMEMBER_ME_CHECKBOX[0],
+                                       LoginPage.REMEMBER_ME_CHECKBOX[1]), "Remember me checkbox is not visible."
+        assert self.is_element_visible(LoginPage.LOGIN_BUTTON[0],
+                                       LoginPage.LOGIN_BUTTON[1]), "Login button is not visible."
+        assert self.is_element_visible(LoginPage.FORGOT_PASSWORD_LINK[0],
+                                       LoginPage.FORGOT_PASSWORD_LINK[1]), "Forgot password link is not visible."
+
+        # Check if the Email and Password fields are aligned properly
+        email_field = self.get_element(LoginPage.EMAIL_FIELD)
+        password_field = self.get_element(LoginPage.PASSWORD_FIELD)
+        assert email_field.location['x'] == password_field.location['x'], \
+            "Email and Password fields are not aligned horizontally."
+
+        # Validate the presence of text on the page
+        login_button = self.get_element(LoginPage.LOGIN_BUTTON)
+        assert login_button.text == "Log in", "Login button text is incorrect."
+        forgot_password_link = self.get_element(LoginPage.FORGOT_PASSWORD_LINK)
+        assert forgot_password_link.text == "Forgot password?", "Forgot password link text is incorrect."
+
 
 

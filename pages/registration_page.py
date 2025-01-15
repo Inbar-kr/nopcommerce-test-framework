@@ -3,8 +3,7 @@ from selenium.webdriver.common.by import By
 import logging
 from pages.base_page import BasePage
 from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+
 
 class RegistrationPage(BasePage):
     # Locators for elements on the Registration page
@@ -312,6 +311,7 @@ class RegistrationPage(BasePage):
 
         # Return whether all fields were validated successfully
         return all_fields_valid
+
     def validate_spaces(self):
         mandatory_fields = self.get_mandatory_fields()
 
@@ -382,5 +382,3 @@ class RegistrationPage(BasePage):
         for field_locator, expected_error_message, first_name, last_name, email, password, confirm_password in fields_to_test:
             self.validate_field_and_check_error(field_locator, expected_error_message, first_name, last_name, email,
                                                 password, confirm_password)
-
-
