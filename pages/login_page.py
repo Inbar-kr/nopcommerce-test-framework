@@ -1,9 +1,13 @@
+import json
+import os
+import time
 import pyperclip
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from tests.test_registration import TestUserRegistration
+from utils.driver_factory import DriverFactory
 import logging
 from pages.base_page import BasePage
 
@@ -14,6 +18,7 @@ class LoginPage(BasePage):
     PASSWORD_FIELD = (By.ID, "Password")
     LOGIN_BUTTON = (By.XPATH, "//a[@class='ico-login']")
     LOGOUT_BUTTON = (By.XPATH, "//a[@class='ico-logout']")
+    POPUP_CLOSE_BUTTON = (By.XPATH, "//div[@id='bar-notification']//span[@title='Close']")
     REMEMBER_ME_CHECKBOX = (By.ID, "RememberMe")
     FORGOT_PASSWORD_LINK = (By.LINK_TEXT, "Forgot password?")
     SUBMIT_LOGIN_BUTTON = (By.XPATH, "//button[@class='button-1 login-button']")
@@ -44,16 +49,38 @@ class LoginPage(BasePage):
         self.logger.info("Submitting the login form.")
         self.click(self.LOGIN_BUTTON)
 
+    # Helper methods to save and load cookies
+    @staticmethod
+    def save_cookies(driver, filepath):
+        cookies = driver.get_cookies()
+        with open(filepath, 'w') as cookie_file:
+            json.dump(cookies, cookie_file)
+
+    @staticmethod
+    def load_cookies(driver, filepath):
+        with open(filepath, 'r') as cookie_file:
+            cookies = json.load(cookie_file)
+            for cookie in cookies:
+                driver.add_cookie(cookie)
+
     def is_password_hidden(self):
-        password_field = self.get_element(self.PASSWORD_FIELD)
-        return password_field.get_attribute("type") == "password"
+        password_field = self.wait_for_element(*self.PASSWORD_FIELD)
+        password_type = password_field.get_attribute("type")
+        return password_type == "password"
 
     def is_password_visible(self):
-        password_field = self.get_element(self.PASSWORD_FIELD)
-        return password_field.get_attribute("type") == "text"
+        password_field = self.wait_for_element(*self.PASSWORD_FIELD)
+        password_type = password_field.get_attribute("type")
+        return password_type == "text"
+
+    def validate_password_visibility(self, is_visible):
+        if is_visible:
+            assert self.is_password_visible(), "Password field should be visible."
+        else:
+            assert self.is_password_hidden(), "Password field should be hidden."
 
     def toggle_password_visibility(self):
-        password_field = self.wait_for_element(self.PASSWORD_FIELD, timeout=10)
+        password_field = self.wait_for_element(*self.PASSWORD_FIELD)
 
         if password_field.get_attribute("type") == "password":
             self.driver.execute_script("arguments[0].setAttribute('type', 'text');", password_field)
@@ -85,8 +112,8 @@ class LoginPage(BasePage):
         self.logger.info("Pressed Ctrl+C to attempt to copy the password text.")
         
     def Navigation_from_login_page(self, driver):
+        self.open_url()
         self.click(LoginPage.LOGIN_BUTTON)
-
         self.click(LoginPage.REGISTER_BUTTON)
 
         assert driver.current_url == "https://demo.nopcommerce.com/register?returnUrl=%2F", \
@@ -94,7 +121,6 @@ class LoginPage(BasePage):
 
         driver.back()
 
-        # Click on 'Sitemap' link (or any other page link from the Login page)
         self.click(LoginPage.SITEMAP_LINK)
 
         assert driver.current_url == "https://demo.nopcommerce.com/sitemap", \
@@ -226,7 +252,29 @@ class LoginPage(BasePage):
         assert self.is_element_visible(*self.MY_ACCOUNT_LINK), "Login failed. User account/dashboard not displayed."
         self.logger.info("Login successful using keyboard keys.")
 
+    def login_and_browser_back(self, driver, load_test_data):
+        self.login_user(driver, load_test_data)
+
+        driver.back()
+
+        content_element = self.wait_for_element_to_be_visible((By.CLASS_NAME, "content"))
+
+        assert content_element.is_displayed(), "Content element is not displayed after using the browser's back button."
+
+    def logout_and_browser_back(self, driver, load_test_data):
+        self.login_user(driver, load_test_data)
+        self.logout_user()
+
+        driver.back()
+
+        locator_strategy, locator_value = LoginPage.LOGIN_BUTTON
+
+        assert self.is_element_visible(locator_strategy, locator_value), \
+            "Error: User logged in again after using the browser back button."
+
     def validate_placeholders(self, driver):
+        self.open_url()
+
         expected_placeholders = {
             self.EMAIL_FIELD: "Email",
             self.PASSWORD_FIELD: "Password"
@@ -240,8 +288,21 @@ class LoginPage(BasePage):
                 print(f"Field {field_locator} not found!")
         self.logger.info("All fields have the correct placeholders.")
 
+    def forgotten_password_link(self, driver):
+        self.open_url()
+
+        assert self.is_element_visible(LoginPage.FORGOT_PASSWORD_LINK[0], LoginPage.FORGOT_PASSWORD_LINK[1]), \
+            "'Forgotten Password' link is not visible on the Login page."
+
+        self.click(LoginPage.FORGOT_PASSWORD_LINK)
+
+        assert driver.current_url == "https://demo.nopcommerce.com/passwordrecovery", \
+            f"Password reset page not reached. Current URL is {driver.current_url}."
+
     def password_copying(self, load_test_data):
         test_data = load_test_data["valid_user"]
+
+        self.open_url()
 
         password_text = test_data["password"]
         self.enter_text(self.PASSWORD_FIELD, password_text)
@@ -262,6 +323,8 @@ class LoginPage(BasePage):
 
     def password_page_source(self, driver, load_test_data):
         test_data = load_test_data["valid_user"]
+
+        self.open_url()
 
         password_text = test_data["password"]
         self.enter_text(self.PASSWORD_FIELD, password_text)
@@ -308,6 +371,25 @@ class LoginPage(BasePage):
 
         self.logger.info("Attempted to change the password then Login with the new password")
 
+    def password_visibility_toggle(self, load_test_data):
+        test_data = load_test_data['mandatory_fields']
+
+        self.open_url()
+        self.enter_text(self.PASSWORD_FIELD, test_data['password'])
+        self.enter_text(self.CONFIRM_PASSWORD_FIELD, test_data['confirm_password'])
+
+        assert self.is_password_hidden(), "Password field is unexpectedly visible."
+
+        self.toggle_password_visibility()
+
+        assert self.is_password_visible(), "Password field is still hidden after toggle."
+
+        self.toggle_password_visibility()
+
+        assert self.is_password_hidden(), "Password field is unexpectedly visible after second toggle."
+
+        self.logger.info("Password visibility toggle test passed successfully.")
+
     def login_with_password(self, email, password, expect_success=True):
         self.click(self.LOGIN_BUTTON)
         self.enter_text(self.EMAIL_FIELD, email)
@@ -319,12 +401,45 @@ class LoginPage(BasePage):
                 "Login failed. User account/dashboard not displayed after password change."
             self.logger.info("Login successful with new password.")
         else:
-            assert self.is_element_visible(self.ERROR_MESSAGE), \
+            assert self.is_element_visible(self.ERROR_MESSAGE[0], self.ERROR_MESSAGE[1]), \
                 "User was able to login with old password after password change."
             self.logger.info("Login failed with old password as expected.")
 
+    def login_session_after_browser_restart(self, driver, load_test_data):
+        self.open_url()
+        self.login_user(driver, load_test_data)
+        self.save_cookies(driver, 'cookies.json')
+
+        driver.quit()
+
+        # Create a new driver session
+        driver = DriverFactory.get_driver()
+        login_page = LoginPage(driver)
+        login_page.open_url()
+
+        self.load_cookies(driver, 'cookies.json')
+
+        driver.refresh()
+
+        # To fix
+        self.click(self.POPUP_CLOSE_BUTTON)
+
+        if self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK):
+            self.logger.info("Login successful after reopening the browser.")
+        else:
+            assert self.is_element_visible(self.ERROR_MESSAGE[0], self.ERROR_MESSAGE[1]), \
+                "Session was not maintained after reopening the browser."
+
+        self.logger.info("Session persisted after reopening the browser.")
+
+        try:
+            os.remove('cookies.json')
+        except Exception as e:
+            self.logger.error(f"Failed to delete cookies file: {e}")
+
     def ui_of_login_page(self):
-        # Validate that all UI elements are visible on the Login page
+        self.open_url()
+
         assert self.is_element_visible(LoginPage.LOGIN_FORM_FIELDS[0],
                                        LoginPage.LOGIN_FORM_FIELDS[1]), "Login form is not visible."
         assert self.is_element_visible(LoginPage.EMAIL_FIELD[0],
@@ -338,13 +453,11 @@ class LoginPage(BasePage):
         assert self.is_element_visible(LoginPage.FORGOT_PASSWORD_LINK[0],
                                        LoginPage.FORGOT_PASSWORD_LINK[1]), "Forgot password link is not visible."
 
-        # Check if the Email and Password fields are aligned properly
         email_field = self.get_element(LoginPage.EMAIL_FIELD)
         password_field = self.get_element(LoginPage.PASSWORD_FIELD)
         assert email_field.location['x'] == password_field.location['x'], \
             "Email and Password fields are not aligned horizontally."
 
-        # Validate the presence of text on the page
         login_button = self.get_element(LoginPage.LOGIN_BUTTON)
         assert login_button.text == "Log in", "Login button text is incorrect."
         forgot_password_link = self.get_element(LoginPage.FORGOT_PASSWORD_LINK)

@@ -55,13 +55,11 @@ class TestUserLogin:
         login_page = LoginPage(driver)
 
         login_page.login_with_invalid_email(driver, load_test_data)
-
         assert login_page.EMAIL_ERROR, \
             "Login failed with invalid email. Error message not displayed."
         login_page.logger.info("Error message displayed as expected when logging in with invalid email.")
 
         login_page.login_with_invalid_password(driver, load_test_data)
-
         assert login_page.ERROR_MESSAGE, \
             "Login failed with invalid password. Error message not displayed."
         login_page.logger.info("Error message displayed as expected when logging in with invalid password.")
@@ -91,15 +89,7 @@ class TestUserLogin:
     def test_forgotten_password_link(self, driver):
         login_page = LoginPage(driver)
 
-        login_page.open_url()
-
-        assert login_page.is_element_visible(LoginPage.FORGOT_PASSWORD_LINK), \
-            "'Forgotten Password' link is not visible on the Login page."
-
-        login_page.click(LoginPage.FORGOT_PASSWORD_LINK)
-
-        assert driver.current_url == "https://demo.nopcommerce.com/passwordrecovery", \
-            f"Password reset page not reached. Current URL is {driver.current_url}."
+        login_page.forgotten_password_link(driver)
 
         login_page.logger.info("'Forgotten Password' link is visible on the Login page and works correctly.")
 
@@ -125,7 +115,6 @@ class TestUserLogin:
         "This test verifies that the E-Mail Address and Password text fields on the Login page have the correct placeholder text.")
     def test_field_placeholders(self, driver):
         login_page = LoginPage(driver)
-        login_page.open_url()
 
         login_page.validate_placeholders(driver)
 
@@ -139,13 +128,8 @@ class TestUserLogin:
     def test_login_and_browser_back(self, driver, load_test_data):
         login_page = LoginPage(driver)
 
-        login_page.login_user(driver, load_test_data)
+        login_page.login_and_browser_back(driver, load_test_data)
 
-        driver.back()
-
-        content_element = login_page.wait_for_element_to_be_visible((By.CLASS_NAME, "content"))
-
-        assert content_element.is_displayed(), "Content element is not displayed after using the browser's back button."
         login_page.logger.info("Login and navigation using the browser's back button validated successfully.")
 
     @allure.story("TC_LF_009: Validate Logging out from the Application and browsing back")
@@ -156,16 +140,7 @@ class TestUserLogin:
     def test_logout_and_browser_back(self, driver, load_test_data):
         login_page = LoginPage(driver)
 
-        login_page.login_user(driver, load_test_data)
-
-        login_page.logout_user()
-
-        driver.back()
-
-        locator_strategy, locator_value = LoginPage.LOGIN_BUTTON
-
-        assert login_page.is_element_visible(locator_strategy, locator_value), \
-            "Error: User logged in again after using the browser back button."
+        login_page.logout_and_browser_back(driver, load_test_data)
 
         login_page.logger.info("User did not get logged in again after using the browser back button.")
 
@@ -191,20 +166,9 @@ class TestUserLogin:
     @allure.description(
         "This test validates that the text entered in the 'Password' field is toggled between visible and hidden when the visibility toggle is clicked.")
     def test_password_visibility_toggle(self, driver, load_test_data):
-        test_data = load_test_data["valid_user"]
-
         login_page = LoginPage(driver)
-        login_page.open_url()
 
-        login_page.enter_text(LoginPage.PASSWORD_FIELD, test_data["password"])
-
-        assert login_page.is_password_hidden(), "Password field is unexpectedly visible before toggle."
-        login_page.toggle_password_visibility()
-
-        assert login_page.is_password_visible(), "Password field is unexpectedly hidden after first toggle."
-        login_page.toggle_password_visibility()
-
-        assert login_page.is_password_hidden(), "Password field is unexpectedly visible after second toggle."
+        login_page.password_visibility_toggle(load_test_data)
 
         login_page.logger.info("Password visibility toggle test passed successfully.")
 
@@ -215,7 +179,6 @@ class TestUserLogin:
         "This test validates that the text entered in the 'Password' field cannot be copied, either through the right-click menu or the Ctrl+C shortcut.")
     def test_password_copying(self, driver, load_test_data):
         login_page = LoginPage(driver)
-        login_page.open_url()
 
         login_page.password_copying(load_test_data)
 
@@ -228,7 +191,6 @@ class TestUserLogin:
         "This test validates that the text entered in the 'Password' field is not visible in the page source at any point, ensuring secure handling of sensitive data.")
     def test_password_not_in_page_source(self, driver, load_test_data):
         login_page = LoginPage(driver)
-        login_page.open_url()
 
         login_page.password_page_source(driver, load_test_data)
 
@@ -254,49 +216,11 @@ class TestUserLogin:
         "This test validates that after logging into the application and closing the browser without logging out, "
         "the logged-in session should still be maintained when reopening the application.")
     def test_login_session_after_browser_restart(self, driver, load_test_data):
-        # Helper methods to save and load cookies
-        def save_cookies(driver, filepath):
-            cookies = driver.get_cookies()
-            with open(filepath, 'w') as cookie_file:
-                json.dump(cookies, cookie_file)
-
-        def load_cookies(driver, filepath):
-            with open(filepath, 'r') as cookie_file:
-                cookies = json.load(cookie_file)
-                for cookie in cookies:
-                    driver.add_cookie(cookie)
-
         login_page = LoginPage(driver)
-        login_page.login_user(driver, load_test_data)
 
-        save_cookies(driver, 'cookies.json')
+        login_page.login_session_after_browser_restart(driver, load_test_data)
 
-        driver.quit()
-
-        driver = DriverFactory.get_driver()
-        login_page = LoginPage(driver)
-        login_page.open_url()
-
-        load_cookies(driver, 'cookies.json')
-
-        driver.refresh()
-
-        login_page = LoginPage(driver)
-        assert login_page.is_element_visible(LoginPage.MY_ACCOUNT_LINK), \
-            "Session was not maintained after reopening the browser."
-
-        login_page.logger.info("Session persisted after reopening the browser.")
-
-        os.remove('cookies.json')
-
-    @allure.story(
-        "TC_LF_017: Validate logging in, closing the browser without logging out, and reopening the application")
-    @allure.severity(Severity.NORMAL)
-    @allure.label("Regression")
-    @allure.description(
-        "This test validates that after logging into the application and closing the browser without logging out, the logged-in session should still be maintained when reopening the application.")
-    def test_login_session_after_browser_restart(self, driver, load_test_data):
-        pytest.skip()
+        login_page.logger.info("Login after closing the browser without logging out, and reopening the application.")
 
     @allure.story("TC_LF_018: Validate user is able to navigate to different pages from Login page")
     @allure.severity(Severity.NORMAL)
@@ -305,7 +229,6 @@ class TestUserLogin:
         "This test validates that the user can navigate to different pages (Register Account, Sitemap, etc.) from the Login page.")
     def test_navigation_from_login_page(self, driver, load_test_data):
         login_page = LoginPage(driver)
-        login_page.open_url()
 
         login_page.Navigation_from_login_page(driver)
 
@@ -317,7 +240,6 @@ class TestUserLogin:
     @allure.description("This test validates the UI elements on the Login page, ensuring that all elements are displayed and aligned properly.")
     def test_ui_of_login_page(self, driver):
         login_page = LoginPage(driver)
-        login_page.open_url()
 
         login_page.ui_of_login_page()
 

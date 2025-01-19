@@ -2,7 +2,7 @@ from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from pages.checkout.test_data_provider import TestDataProvider
+from tests.test_data_provider import TestDataProvider
 import logging
 from pages.base_page import BasePage
 
@@ -173,8 +173,3 @@ class CheckoutPage(BasePage):
         except Exception as e:
             self.logger.error(f"Error during verification of billing and confirmation details: {str(e)}")
             raise
-
-
-
-
-
