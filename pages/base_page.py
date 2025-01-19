@@ -51,6 +51,10 @@ class BasePage:
         self.logger.info(f"Alert Text: {alert_text}")
         return alert_text
 
+    def assert_alert_message(self, alert_text, expected_message):
+        assert alert_text == expected_message, \
+            f"Unexpected alert message: '{alert_text}'. Expected: '{expected_message}'"
+
     def close_popup(self):
         alert = self.driver.switch_to.alert
         alert.accept()
