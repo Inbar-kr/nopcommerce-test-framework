@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import pyperclip
 from selenium.webdriver import ActionChains, Keys
 from selenium.webdriver.common.by import By
@@ -10,6 +9,7 @@ from tests.test_registration import TestUserRegistration
 from utils.driver_factory import DriverFactory
 import logging
 from pages.base_page import BasePage
+
 
 class LoginPage(BasePage):
     # Locators for elements on the Login page
@@ -111,7 +111,7 @@ class LoginPage(BasePage):
         password_field.send_keys(Keys.CONTROL, 'c')
         self.logger.info("Pressed Ctrl+C to attempt to copy the password text.")
         
-    def Navigation_from_login_page(self, driver):
+    def navigation_from_login_page(self, driver):
         self.open_url()
         self.click(LoginPage.LOGIN_BUTTON)
         self.click(LoginPage.REGISTER_BUTTON)
@@ -462,6 +462,3 @@ class LoginPage(BasePage):
         assert login_button.text == "Log in", "Login button text is incorrect."
         forgot_password_link = self.get_element(LoginPage.FORGOT_PASSWORD_LINK)
         assert forgot_password_link.text == "Forgot password?", "Forgot password link text is incorrect."
-
-
-

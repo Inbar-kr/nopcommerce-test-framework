@@ -1,11 +1,9 @@
 import pytest
 import allure
 import json
-import os
 from selenium.webdriver.common.by import By
 from pages.login_page import LoginPage
 from config.config import Config
-from utils.driver_factory import DriverFactory
 from allure_commons.types import Severity
 
 
@@ -230,7 +228,7 @@ class TestUserLogin:
     def test_navigation_from_login_page(self, driver, load_test_data):
         login_page = LoginPage(driver)
 
-        login_page.Navigation_from_login_page(driver)
+        login_page.navigation_from_login_page(driver)
 
         login_page.logger.info("User can navigate to different pages.")
 
