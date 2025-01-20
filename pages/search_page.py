@@ -294,7 +294,6 @@ class SearchPage(BasePage):
         self.click(SearchPage.SEARCH_BUTTON)
 
         self.validate_product_display(driver, SearchPage.GRID_VIEW)
-
         self.validate_product_display(driver, SearchPage.LIST_VIEW)
 
         self.logger.info("Both Grid and List view modes display a single product with required options.")

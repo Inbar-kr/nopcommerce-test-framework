@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 
+
 class PaymentMethodSection(BasePage):
     CHECK_METHOD_RADIO_BUTTON = (By.ID, "paymentmethod_0")
     CARD_METHOD_RADIO_BUTTON = (By.ID, "paymentmethod_1")

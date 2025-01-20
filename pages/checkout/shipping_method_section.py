@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 
+
 class ShippingMethodSection(BasePage):
     GROUND_METHOD_RADIO_BUTTON = (By.ID, "shippingoption_0")
     NEXT_DAY_METHOD_RADIO_BUTTON = (By.ID, "shippingoption_1")

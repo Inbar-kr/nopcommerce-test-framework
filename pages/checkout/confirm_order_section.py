@@ -1,6 +1,7 @@
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 
+
 class ConfirmOrderSection(BasePage):
     BACK_SHIPPING_LINK = (By.CLASS_NAME, "back-link")
     CONFIRM_BUTTON = (By.CLASS_NAME, "button-1.confirm-order-next-step-button")

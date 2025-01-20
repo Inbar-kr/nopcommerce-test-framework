@@ -35,7 +35,7 @@ class TestUserSearch:
         search_page.logger.info("User successfully searching for an existing product.")
 
     @allure.story("TC_SF_002: Validate searching with a non-existing Product Name")
-    @allure.severity(Severity.NORMAL)
+    @allure.severity(Severity.CRITICAL)
     @allure.label("Regression")
     @allure.description("This test validates that searching for a non-existing product displays an appropriate message.")
     def test_invalid_product_search(self, driver, load_test_data):
@@ -46,7 +46,7 @@ class TestUserSearch:
         search_page.logger.info("Searching for a non-existing product displays an appropriate message")
 
     @allure.story("TC_SF_003: Validate searching without providing any Product Name")
-    @allure.severity(Severity.NORMAL)
+    @allure.severity(Severity.CRITICAL)
     @allure.label("Regression")
     @allure.description("This test validates that searching without entering a product name displays an appropriate popup message.")
     def test_empty_product_search(self, driver):
@@ -153,17 +153,12 @@ class TestUserSearch:
 
         search_page.logger.info("Search successful by viewing List and Grid views when only one Product and multiple Products is displayed.")
 
-    """@allure.story("TC_SF_012: Validate List and Grid views when multiple Products are displayed in the search results")
+    @allure.story("TC_SF_012: Validate ")
     @allure.severity(Severity.NORMAL)
     @allure.label("Regression")
-    @allure.description(
-        "This test validates the List and Grid views for multiple products displayed in the search results and verifies navigation to the Product Display Page for each product.")
-    def test_list_and_grid_views_multiple_products(self, driver, load_test_data):
-        search_page = SearchPage(driver)
-
-        search_page.list_and_grid_views(driver, load_test_data)
-
-        search_page.logger.info("Search successful by viewing List and Grid views when multiple Products is displayed.")"""
+    @allure.description("This test validates ")
+    def test_something(self, driver, load_test_data):
+        pytest.skip()
 
     @allure.story("TC_SF_013: Validate adding to Product Compare Page from Search Results page")
     @allure.severity(Severity.NORMAL)

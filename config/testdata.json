@@ -130,6 +130,14 @@
       "card"
     ]
   },
+  "payment_with_card": {
+      "card_type": "Visa",
+      "cardholder_name": "Jane Doe",
+      "card_number": "1234567812345678",
+      "expiry_month": "12",
+      "expiry_year": "2028",
+      "cvv": "123"
+    },
   "shipping_methods": {
     "default_method": "ground",
     "valid_methods": [

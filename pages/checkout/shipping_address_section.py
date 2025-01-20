@@ -1,9 +1,12 @@
 from selenium.webdriver.common.by import By
-import time
 from pages.base_page import BasePage
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+
+from pages.checkout.billing_address_section import BillingAddressSection
+from pages.checkout.checkout_page import CheckoutPage
+
 
 class ShippingAddressSection(BasePage):
     # Same address form
@@ -15,7 +18,7 @@ class ShippingAddressSection(BasePage):
     FIRST_NAME_FIELD = (By.ID, "ShippingNewAddress_FirstName")
     LAST_NAME_FIELD = (By.ID, "ShippingNewAddress_LastName")
     EMAIL_FIELD = (By.ID, "ShippingNewAddress_Email")
-    COMPANY_FIELD = (By.ID, "BShippingNewAddress_Company")
+    COMPANY_FIELD = (By.ID, "ShippingNewAddress_Company")
     COUNTRY_DROPDOWN = (By.ID, "ShippingNewAddress_CountryId")
     STATE_DROPDOWN = (By.ID, "ShippingNewAddress_StateProvinceId")
     CITY_FIELD = (By.ID, "ShippingNewAddress_City")
@@ -23,24 +26,11 @@ class ShippingAddressSection(BasePage):
     ADDRESS2_FIELD = (By.ID, "ShippingNewAddress_Address2")
     ZIP_CODE_FIELD = (By.ID, "ShippingNewAddress_ZipPostalCode")
     PHONE_NUMBER_FIELD = (By.ID, "ShippingNewAddress_PhoneNumber")
-    FAX_NUMBER_FIELD = (By.ID, "ShippingNewAddress.FaxNumber")
+    FAX_NUMBER_FIELD = (By.ID, "ShippingNewAddress_FaxNumber")
     CONTINUE_BUTTON = (By.CSS_SELECTOR, "div#shipping-buttons-container button.button-1.new-address-next-step-button")
 
-    """def enter_shipping_address(self, first_name, last_name, email, country, city, address, zip_code, phone_number):
-        self.enter_text(self.FIRST_NAME_FIELD, first_name)
-        self.enter_text(self.LAST_NAME_FIELD, last_name)
-        self.enter_text(self.EMAIL_FIELD, email)
-        self.select_dropdown_option(self.COUNTRY_DROPDOWN, country)
-        self.enter_text(self.CITY_FIELD, city)
-        self.enter_text(self.ADDRESS1_FIELD, address)
-        self.enter_text(self.ZIP_CODE_FIELD, zip_code)
-        self.enter_text(self.PHONE_NUMBER_FIELD, phone_number)
-
-        self.scroll_into_view(self.CONTINUE_BUTTON)
-        self.click(self.CONTINUE_BUTTON)"""
 
     def enter_mandatory_shipping_address(self, load_test_data):
-        # Select a shipping address from your address book or enter a new address
         self._select_dropdown(self.SHIPPING_ADDRESS_DROPDOWN, "New Address")
 
         shipping_data = load_test_data["checkout_fields"]["mandatory_shipping_address_section"]
@@ -65,9 +55,7 @@ class ShippingAddressSection(BasePage):
             self.logger.error(f"Failed to enter mandatory shipping address: {str(e)}")
             raise
 
-
     def enter_all_shipping_address(self, load_test_data):
-        # Select a shipping address from your address book or enter a new address
         self._select_dropdown(self.SHIPPING_ADDRESS_DROPDOWN, "New Address")
 
         shipping_data = load_test_data["checkout_fields"]["all_billing_address_section"]
@@ -103,28 +91,33 @@ class ShippingAddressSection(BasePage):
         if not self.get_text_value(field_locator):
             self.enter_text(field_locator, value)
 
-    def validate_placeholders_for_all_fields(self, driver):
+    def validate_placeholders_for_all_fields(self, driver, load_test_data):
+        checkout_page = CheckoutPage(driver)
+        checkout_page._login_as_user(driver, load_test_data)
+        checkout_page._search_and_add_product(driver, load_test_data)
+
+        billing_address_section = checkout_page.get_billing_address_section()
+        billing_address_section.wait_for_element(BillingAddressSection.SAME_ADDRESS_CHECKBOX)
+        billing_address_section.unselect_ship_to_same_address()
+        checkout_page.verify_billing_details_match(driver, load_test_data, fill_full_address=False)
+
         self._select_dropdown(self.SHIPPING_ADDRESS_DROPDOWN, "New Address")
 
         expected_placeholders = {
-            self.COMPANY_FIELD: "",
-            self.CITY_FIELD: "",
-            self.ADDRESS1_FIELD: "",
-            self.ADDRESS2_FIELD: "",
-            self.ZIP_CODE_FIELD: "",
-            self.PHONE_NUMBER_FIELD: "",
-            self.FAX_NUMBER_FIELD: ""
+            self.COMPANY_FIELD: "ShippingNewAddress_Company",
+            self.CITY_FIELD: "ShippingNewAddress_City",
+            self.ADDRESS1_FIELD: "ShippingNewAddress_Address1",
+            self.ADDRESS2_FIELD: "ShippingNewAddress_Address2",
+            self.ZIP_CODE_FIELD: "ShippingNewAddress_ZipPostalCode",
+            self.PHONE_NUMBER_FIELD: "ShippingNewAddress_PhoneNumber",
+            self.FAX_NUMBER_FIELD: "ShippingNewAddress_FaxNumber"
         }
 
         for field_locator, expected_placeholder in expected_placeholders.items():
-            field = self.wait_for_element(field_locator, timeout=20)
-            if field:
-                self.wait_for_placeholder(driver, field_locator, expected_placeholder)
-            else:
-                self.logger.error(f"Field {field_locator} not found!")
-                raise ValueError(f"Field {field_locator} is missing on the page.")
+            self.logger.info(f"Validating placeholder for field: {field_locator}")
+            checkout_page._validate_placeholder_for_field(driver, field_locator, expected_placeholder)
 
-        self.logger.info("All shipping address fields have the correct placeholders.")
+        self.logger.info("All Shipping address fields have the correct placeholders.")
 
     def submit_shipping_form_without_fields(self):
         self._select_dropdown(self.SHIPPING_ADDRESS_DROPDOWN, "New Address")
@@ -138,6 +131,55 @@ class ShippingAddressSection(BasePage):
 
         self.close_popup()
 
+    def checkout_with_shipping_address(self, driver, load_test_data):
+        checkout_page = CheckoutPage(driver)
 
+        checkout_page._login_as_user(driver, load_test_data)
+        self.logger.info("Logged in as a signed-in user.")
 
+        checkout_page._search_and_add_product(driver, load_test_data)
+        self.logger.info("Searched and added product to the cart.")
 
+        billing_address_section = checkout_page.get_billing_address_section()
+        billing_address_details = billing_address_section.get_billing_address_details()
+        self.logger.info(f"Billing Address Details: {billing_address_details}")
+
+        billing_address_section.wait_for_element(BillingAddressSection.SAME_ADDRESS_CHECKBOX)
+        billing_address_section.unselect_ship_to_same_address()
+        checkout_page.verify_billing_details_match(driver, load_test_data, fill_full_address=False)
+        self.logger.info("Billing address details verified and added.")
+
+        self.enter_mandatory_shipping_address(load_test_data)
+        self.logger.info("All shipping address details entered.")
+
+        checkout_page._select_shipping_method("ground")
+        self.logger.info("Shipping method selected.")
+
+        checkout_page._select_payment_method("Check / Money Order")
+        self.logger.info("Payment method selected.")
+
+        checkout_page._complete_payment_and_order()
+        self.logger.info("Order confirmed and completed.")
+
+        self.logger.info("Attempt to checkout as a signed-in user with a new shipping address completed.")
+
+    def no_fields_in_shipping_address(self, driver, load_test_data):
+        checkout_page = CheckoutPage(driver)
+
+        checkout_page._login_as_user(driver, load_test_data)
+        self.logger.info("Logged in as a signed-in user.")
+
+        checkout_page._search_and_add_product(driver, load_test_data)
+        self.logger.info("Searched and added product to the cart.")
+
+        billing_address_section = checkout_page.get_billing_address_section()
+        billing_address_details = billing_address_section.get_billing_address_details()
+        self.logger.info(f"Billing Address Details: {billing_address_details}")
+
+        billing_address_section.wait_for_element(BillingAddressSection.SAME_ADDRESS_CHECKBOX)
+        billing_address_section.unselect_ship_to_same_address()
+        checkout_page.verify_billing_details_match(driver, load_test_data, fill_full_address=False)
+        self.logger.info("Billing address details verified and added.")
+
+        self.submit_shipping_form_without_fields()
+        self.logger.info("Attempted to submit shipping address form without any fields filled.")

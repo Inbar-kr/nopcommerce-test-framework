@@ -3,6 +3,8 @@ from pages.base_page import BasePage
 from selenium.webdriver.support.select import Select
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
+from pages.checkout.checkout_page import CheckoutPage
+
 
 class BillingAddressSection(BasePage):
     # Locators for billing address fields
@@ -133,24 +135,24 @@ class BillingAddressSection(BasePage):
             "phone_number": self.get_text_value(self.PHONE_NUMBER_FIELD),
         }
 
-    def validate_placeholders_for_all_fields(self, driver):
+    def validate_placeholders_for_all_fields(self, driver, load_test_data):
+        checkout_page = CheckoutPage(driver)
+        checkout_page._login_as_user(driver, load_test_data)
+        checkout_page._search_and_add_product(driver, load_test_data)
+        self.get_billing_address_details()
+
         expected_placeholders = {
-            self.COMPANY_FIELD: "",
-            self.CITY_FIELD: "",
-            self.ADDRESS1_FIELD: "",
-            self.ADDRESS2_FIELD: "",
-            self.ZIP_CODE_FIELD: "",
-            self.PHONE_NUMBER_FIELD: "",
-            self.FAX_NUMBER_FIELD: ""
+            self.COMPANY_FIELD: "BillingNewAddress_Company",
+            self.CITY_FIELD: "BillingNewAddress_City",
+            self.ADDRESS1_FIELD: "BillingNewAddress_Address1",
+            self.ADDRESS2_FIELD: "BillingNewAddress_Address2",
+            self.ZIP_CODE_FIELD: "BillingNewAddress_ZipPostalCode",
+            self.PHONE_NUMBER_FIELD: "BillingNewAddress_PhoneNumber",
+            self.FAX_NUMBER_FIELD: "BillingNewAddress_FaxNumber"
         }
 
         for field_locator, expected_placeholder in expected_placeholders.items():
-            field = self.wait_for_element(field_locator, timeout=10)
-            if field:
-                self.wait_for_placeholder(driver, field_locator, expected_placeholder)
-            else:
-                self.logger.error(f"Field {field_locator} not found!")
-                raise ValueError(f"Field {field_locator} is missing on the page.")
+            checkout_page._validate_placeholder_for_field(driver, field_locator, expected_placeholder)
 
         self.logger.info("All billing address fields have the correct placeholders.")
 
@@ -168,6 +170,62 @@ class BillingAddressSection(BasePage):
 
         self.close_popup()
 
+    def checkout_as_signed_in_user_with_new_address(self, driver, load_test_data):
+        checkout_page = CheckoutPage(driver)
 
+        checkout_page._login_as_user(driver, load_test_data)
+        self.logger.info("Logged in as a signed-in user.")
 
+        checkout_page._search_and_add_product(driver, load_test_data)
+        self.logger.info("Searched and added product to the cart.")
 
+        self.get_billing_address_details()
+        self.wait_for_element(BillingAddressSection.SAME_ADDRESS_CHECKBOX)
+        self.unselect_ship_to_same_address()
+        checkout_page.verify_billing_details_match(driver, load_test_data, fill_full_address=False)
+        self.logger.info("Billing address details verified and updated.")
+
+        shipping_address_section = checkout_page.get_shipping_address_section()
+        shipping_address_section.enter_mandatory_shipping_address(load_test_data)
+        self.logger.info("Mandatory shipping address details entered.")
+
+        checkout_page._select_shipping_method("ground")
+        self.logger.info("Shipping method selected.")
+
+        checkout_page._select_payment_method("Check / Money Order")
+        self.logger.info("Payment method selected.")
+
+        checkout_page._complete_payment_and_order()
+        self.logger.info("Order confirmed and completed.")
+
+        self.logger.info("Attempt to checkout as a signed-in user with a new address completed.")
+
+    def checkout_as_signin_user_with_full_billing_address(self, driver, load_test_data):
+        checkout_page = CheckoutPage(driver)
+
+        checkout_page._login_as_user(driver, load_test_data)
+        self.logger.info("Logged in as a signed-in user.")
+
+        checkout_page._search_and_add_product(driver, load_test_data)
+        self.logger.info("Searched and added product to the cart.")
+
+        self.get_billing_address_details()
+        self.wait_for_element(BillingAddressSection.SAME_ADDRESS_CHECKBOX)
+        self.unselect_ship_to_same_address()
+        checkout_page.verify_billing_details_match(driver, load_test_data, fill_full_address=True)
+        self.logger.info("Billing address details verified and added.")
+
+        shipping_address_section = checkout_page.get_shipping_address_section()
+        shipping_address_section.enter_mandatory_shipping_address(load_test_data)
+        self.logger.info("Mandatory shipping address details entered.")
+
+        checkout_page._select_shipping_method("ground")
+        self.logger.info("Shipping method selected.")
+
+        checkout_page._select_payment_method("Check / Money Order")
+        self.logger.info("Payment method selected.")
+
+        checkout_page._complete_payment_and_order()
+        self.logger.info("Order confirmed and completed.")
+
+        self.logger.info("Attempt to checkout as a signed-in user with a new address completed.")

@@ -145,6 +145,18 @@ class LoginPage(BasePage):
                                        self.MY_ACCOUNT_LINK[1]), "Login failed. User account/dashboard not displayed."
         self.logger.info("Login successful.")
 
+    def login_user_without_register(self, load_test_data):
+        test_data = load_test_data['mandatory_fields']
+
+        self.enter_text(self.EMAIL_FIELD, test_data['email'])
+        self.enter_text(self.PASSWORD_FIELD, test_data['password'])
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+        self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
+        assert self.is_element_visible(By.CLASS_NAME,
+                                       self.MY_ACCOUNT_LINK[1]), "Login failed. User account/dashboard not displayed."
+        self.logger.info("Login successful.")
+
     def logout_user(self):
         locator_strategy, locator_value = self.LOGOUT_BUTTON
 

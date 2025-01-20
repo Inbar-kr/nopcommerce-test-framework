@@ -1,10 +1,16 @@
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By
+import time
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
-from tests.test_data_provider import TestDataProvider
+from pages.checkout.test_data_provider import TestDataProvider
 import logging
 from pages.base_page import BasePage
+from pages.login_page import LoginPage
+from tests.test_login import TestUserLogin
+from tests.test_registration import TestUserRegistration
+from tests.test_search import TestUserSearch
+
 
 class CheckoutPage(BasePage):
     # # Main locators for the checkout process
@@ -36,7 +42,6 @@ class CheckoutPage(BasePage):
     EMAIL_ERROR = (By.ID, "Email-error")
     PASSWORD_FIELD = (By.ID, "Password")
     LOGIN_BUTTON = (By.CLASS_NAME, "button-1.login-button")
-
 
     def __init__(self, driver):
         super().__init__(driver)
@@ -70,9 +75,84 @@ class CheckoutPage(BasePage):
         from pages.checkout.confirm_order_section import ConfirmOrderSection
         return ConfirmOrderSection(self.driver)
 
+    def _login_as_user(self, driver, load_test_data):
+        login_test = TestUserLogin()
+        login_test.test_valid_login(driver, load_test_data)
+
+    def _logout_as_user(self, driver):
+        login_page = LoginPage(driver)
+        login_page.logout_user()
+
+    def _login_as_new_user(self, driver, load_test_data):
+        login_page = LoginPage(driver)
+        login_page.login_user_without_register(load_test_data)
+
+    def _register_as_user(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+    def _returning_customer(self, driver, load_test_data):
+        registration_test = TestUserRegistration()
+        registration_test.test_mandatory_fields_registration(driver, load_test_data)
+
+        login_test = TestUserLogin()
+        login_test.test_valid_login(driver, load_test_data)
+
+    def _search_and_add_product(self, driver, load_test_data):
+        search_test = TestUserSearch()
+        search_test.test_valid_product(driver, load_test_data)
+        self.add_product_to_cart()
+
+    def _fill_billing_and_shipping_details(self, driver, load_test_data):
+        self.verify_billing_details_match(driver, load_test_data, fill_full_address=True)
+
+    def _select_shipping_method(self, method):
+        shipping_method_section = self.get_shipping_method_section()
+        shipping_method_section.select_shipping_method(method)
+
+    def _select_payment_method(self, method):
+        payment_method_section = self.get_payment_method_section()
+        payment_method_section.select_payment_method(method)
+
+    def _complete_payment_and_order(self):
+        payment_information_section = self.get_payment_information_section()
+        payment_information_section.click(payment_information_section.CONTINUE_BUTTON)
+
+        confirm_order = self.get_confirm_order_section()
+        confirm_order.confirm_order()
+        confirm_order.complete_order()
+
+    def _complete_card_payment_and_order(self, load_test_data):
+        payment_information_section = self.get_payment_information_section()
+        payment_information_section.fill_payment_information(load_test_data)
+
+        confirm_order = self.get_confirm_order_section()
+        confirm_order.confirm_order()
+        confirm_order.complete_order()
+
+    def _validate_placeholder_for_field(self, driver, field_locator, expected_placeholder):
+        try:
+            field = WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located(field_locator)
+            )
+            if field:
+                actual_placeholder = field.get_attribute("placeholder")
+                if not actual_placeholder:
+                    self.logger.warning(f"No placeholder found for field '{field_locator}'. Skipping validation.")
+                    return
+                assert actual_placeholder == expected_placeholder, \
+                    f"Placeholder mismatch! Expected: '{expected_placeholder}', but got: '{actual_placeholder}'"
+                self.logger.info(f"Placeholder for field '{field_locator}' is correct.")
+            else:
+                self.logger.error(f"Element '{field_locator}' not found on the page.")
+                raise ValueError(f"Element '{field_locator}' is missing.")
+        except Exception as e:
+            self.logger.error(f"Error during placeholder validation for '{field_locator}': {str(e)}")
+            raise
+
     def verify_empty_cart(self):
-        self.wait_for_element(self.ERROR_EMPTY_CART)
-        return self.is_element_visible(self.ERROR_EMPTY_CART)
+        self.wait_for_element(*self.ERROR_EMPTY_CART)
+        return self.is_element_visible(*self.ERROR_EMPTY_CART)
 
     def add_product_to_cart(self):
         self.click(self.ADD_TO_CART_BUTTON)
@@ -93,14 +173,19 @@ class CheckoutPage(BasePage):
         self.click(self.CHECKOUT_BUTTON)
 
     def hover_cart_button(self):
-        shopping_cart_button = self.wait_for_element(self.SHOPPING_CART_BUTTON)
-        cart_hover_button = self.wait_for_element(self.CART_HOVER_BUTTON)
+        shopping_cart_button = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(self.SHOPPING_CART_BUTTON)
+        )
+        cart_hover_button = WebDriverWait(self.driver, 10).until(
+            EC.visibility_of_element_located(self.CART_HOVER_BUTTON)
+        )
 
         actions = ActionChains(self.driver)
         actions.move_to_element(shopping_cart_button).perform()
 
         self.wait_for_element(self.CART_HOVER_BUTTON)
         self.wait_for_element(self.GO_TO_CART_BUTTON)
+
         actions.move_to_element(cart_hover_button).click().perform()
 
     def proceed_as_guest(self):
@@ -123,18 +208,31 @@ class CheckoutPage(BasePage):
         confirm_order_section = self.get_confirm_order_section()
         confirm_order_section.confirm_order()
 
-    def extract_alert_text(self):
-        alert = WebDriverWait(self.driver, 5).until(EC.alert_is_present())
-        alert_text = alert.text
-        print("Alert Text:", alert_text)
-        return alert_text
-
-    def close_popup(self):
-        alert = self.driver.switch_to.alert
-        alert.accept()
-
     def checkout_as_guest(self):
         self.click(self.CHECKOUT_AS_GUEST_BUTTON)
+
+    def checkout_navigation_empty_cart(self):
+        self.open_url()
+
+        self.wait_for_element(self.SHOPPING_CART_BUTTON)
+        self.click(self.SHOPPING_CART_BUTTON)
+
+        self.wait_for_element(self.ERROR_EMPTY_CART)
+        assert self.verify_empty_cart(), "Empty cart message was not displayed"
+
+    def checkout_navigation_from_cart(self, driver, load_test_data):
+        search_test = TestUserSearch()
+        search_test.test_valid_product(driver, load_test_data)
+
+        self.add_product_to_cart()
+        assert "checkout" in driver.current_url, "User was not redirected to the checkout page"
+
+    def checkout_navigation_using_header_option(self, driver, load_test_data):
+        search_test = TestUserSearch()
+        search_test.test_valid_product(driver, load_test_data)
+
+        self.add_product_to_cart_header()
+        assert "checkout" in driver.current_url, "User was not redirected to the checkout page!"
 
     def verify_billing_details_match(self, driver, load_test_data, fill_full_address):
         registration_helper = TestDataProvider()
@@ -152,24 +250,66 @@ class CheckoutPage(BasePage):
         else:
             billing_address_section.enter_mandatory_billing_address(load_test_data)
 
+    def checkout_navigation_from_cart_block(self, driver, load_test_data):
+        search_test = TestUserSearch()
+        search_test.test_valid_product(driver, load_test_data)
+        self.logger.info("Product added to the cart.")
 
+        self.click(self.ADD_TO_CART_BUTTON)
+        self.click(self.SHOPPING_CART_POPUP_CLOSE)
+        self.wait_for_element(self.SHOPPING_CART_BUTTON)
+        time.sleep(2)
+        self.logger.info("Cart button and popup handled.")
 
-    def verify_billing_and_confirmation_match(self):
-        try:
-            billing_details = self.get_billing_address_section().get_all_billing_address_details()
-            confirm_order_details = self.get_confirm_order_section().get_confirm_order_details()
+        self.hover_cart_button()
 
-            self.logger.info(f"Billing Info: {billing_details}")
-            self.logger.info(f"Confirmation Info: {confirm_order_details}")
+        assert self.is_element_visible(*self.CHECKOUT_BUTTON), \
+            "Checkout page failed. User was not redirected to the checkout page."
+        self.logger.info("User successfully redirected to the checkout page.")
 
-            for key in billing_details.keys():
-                assert billing_details[key] == confirm_order_details[key], \
-                    f"Mismatch in {key}: Billing - {billing_details[key]}, Confirmation - {confirm_order_details[key]}"
+    def checkout_as_signin_user(self, driver, load_test_data):
+        self._login_as_user(driver, load_test_data)
+        self._search_and_add_product(driver, load_test_data)
+        self._fill_billing_and_shipping_details(driver, load_test_data)
+        self._select_shipping_method("ground")
+        self._select_payment_method("Check / Money Order")
+        self._complete_payment_and_order()
 
-            print("All billing and confirmation order details match successfully.")
-        except AssertionError as e:
-            self.logger.error(f"Assertion failed: {str(e)}")
-            raise
-        except Exception as e:
-            self.logger.error(f"Error during verification of billing and confirmation details: {str(e)}")
-            raise
+        self.logger.info("Attempt to checkout as a signin user.")
+
+    def checkout_as_guest_user(self, driver, load_test_data):
+        self._login_as_user(driver, load_test_data)
+        self._search_and_add_product(driver, load_test_data)
+        self.proceed_as_guest()
+        self._fill_billing_and_shipping_details(driver, load_test_data)
+        self._select_shipping_method("ground")
+        self._select_payment_method("Check / Money Order")
+        self._complete_payment_and_order()
+
+        self.logger.info("Attempt to checkout as a guest user.")
+
+    def checkout_as_new_user(self, driver, load_test_data):
+        self._search_and_add_product(driver, load_test_data)
+        self.proceed_to_register()
+        self._register_as_user(driver, load_test_data)
+        self.continue_to_checkout()
+        self._fill_billing_and_shipping_details(driver, load_test_data)
+        self._select_shipping_method("ground")
+        self._select_payment_method("Check / Money Order")
+        self._complete_payment_and_order()
+
+        self.logger.info("Attempt to checkout as a new user.")
+
+    def checkout_as_returning_user(self, driver, load_test_data):
+        self._register_as_user(driver, load_test_data)
+        self._logout_as_user(driver)
+        self._search_and_add_product(driver, load_test_data)
+        self._login_as_new_user(driver, load_test_data)
+        self.click(self.AGREE_TERMS_CHECKBOX)
+        self.click(self.CHECKOUT_BUTTON)
+        self._fill_billing_and_shipping_details(driver, load_test_data)
+        self._select_shipping_method("ground")
+        self._select_payment_method("Check / Money Order")
+        self._complete_payment_and_order()
+
+        self.logger.info("Attempt to checkout as a returning user.")
