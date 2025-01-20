@@ -19,6 +19,7 @@ class LoginPage(BasePage):
     LOGIN_BUTTON = (By.XPATH, "//a[@class='ico-login']")
     LOGOUT_BUTTON = (By.XPATH, "//a[@class='ico-logout']")
     POPUP_CLOSE_BUTTON = (By.XPATH, "//div[@id='bar-notification']//span[@title='Close']")
+    POPUP_BAR_NOTIFICATION = (By.CSS_SELECTOR, "div.bar-notification.success")
     REMEMBER_ME_CHECKBOX = (By.ID, "RememberMe")
     FORGOT_PASSWORD_LINK = (By.LINK_TEXT, "Forgot password?")
     SUBMIT_LOGIN_BUTTON = (By.XPATH, "//button[@class='button-1 login-button']")
@@ -424,29 +425,34 @@ class LoginPage(BasePage):
 
         driver.quit()
 
-        # Create a new driver session
         driver = DriverFactory.get_driver()
         login_page = LoginPage(driver)
         login_page.open_url()
 
         self.load_cookies(driver, 'cookies.json')
-
         driver.refresh()
 
-        # To fix
-        self.click(self.POPUP_CLOSE_BUTTON)
+        # To fix: Wait for the popup to be visible and clickable, if it's present
+        if self.wait_for_element_to_be_visible(self.POPUP_BAR_NOTIFICATION):
+            self.logger.info("Popup displayed after reopening the browser.")
+            close_button = driver.find_element(*self.POPUP_BAR_NOTIFICATION).find_element(By.CSS_SELECTOR, "span.close")
+            close_button.click()
+        else:
+            self.logger.info("No popup displayed after reopening the browser.")
 
+        # Verify session persistence
         if self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK):
             self.logger.info("Login successful after reopening the browser.")
         else:
-            assert self.is_element_visible(self.ERROR_MESSAGE[0], self.ERROR_MESSAGE[1]), \
+            assert self.is_element_visible(*self.ERROR_MESSAGE), \
                 "Session was not maintained after reopening the browser."
 
         self.logger.info("Session persisted after reopening the browser.")
 
+        # Clean up by removing the cookies file
         try:
             os.remove('cookies.json')
-        except Exception as e:
+        except OSError as e:
             self.logger.error(f"Failed to delete cookies file: {e}")
 
     def ui_of_login_page(self):

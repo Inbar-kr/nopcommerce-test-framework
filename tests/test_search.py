@@ -153,12 +153,16 @@ class TestUserSearch:
 
         search_page.logger.info("Search successful by viewing List and Grid views when only one Product and multiple Products is displayed.")
 
-    @allure.story("TC_SF_012: Validate ")
-    @allure.severity(Severity.NORMAL)
+    @allure.story("TC_SF_012: Validate page navigation when multiple products are displayed.")
+    @allure.severity(allure.severity_level.NORMAL)
     @allure.label("Regression")
-    @allure.description("This test validates ")
-    def test_something(self, driver, load_test_data):
-        pytest.skip()
+    @allure.description("This test validates page navigation for search results when multiple products are displayed.")
+    def test_pages_views_products(self, driver, load_test_data):
+        search_page = SearchPage(driver)
+
+        search_page.pages_views_products(driver, load_test_data)
+
+        search_page.logger.info("Search successful by navigation when multiple products are displayed.")
 
     @allure.story("TC_SF_013: Validate adding to Product Compare Page from Search Results page")
     @allure.severity(Severity.NORMAL)

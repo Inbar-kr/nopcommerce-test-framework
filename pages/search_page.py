@@ -24,6 +24,10 @@ class SearchPage(BasePage):
     CATEGORY_DROPDOWN = (By.ID, "cid")
     SORT_BY_DROPDOWN = (By.ID, "products-orderby")
     DISPLAY_DROPDOWN = (By.ID, "products-pagesize")
+    CURRENT_PAGE_BUTTON = (By.CLASS_NAME, "current-page")
+    INDIVIDUAL_PAGE_BUTTON = (By.CLASS_NAME, "individual-page")
+    NEXT_PAGE_BUTTON = (By.CSS_SELECTOR, "li.next-page a")
+    PREVIOUS_PAGE_BUTTON = (By.CSS_SELECTOR, "li.previous-page a")
 
     # View modes
     GRID_VIEW = (By.XPATH, "//a[@data-viewmode='grid']")
@@ -278,9 +282,9 @@ class SearchPage(BasePage):
         product_items = driver.find_elements(By.CLASS_NAME, "product-item")
         assert len(product_items) == 1, f"{view_mode} view did not display a single product as expected."
 
-        assert self.is_element_visible(*SearchPage.ADD_TO_CART_BUTTON), "Add to Cart option missing."
-        assert self.is_element_visible(*SearchPage.ADD_TO_WISHLIST_BUTTON), "Wish List option missing."
-        assert self.is_element_visible(*SearchPage.ADD_TO_COMPARE_BUTTON), "Compare Product option missing."
+        assert self.is_element_visible(*self.ADD_TO_CART_BUTTON), "Add to Cart option missing."
+        assert self.is_element_visible(*self.ADD_TO_WISHLIST_BUTTON), "Wish List option missing."
+        assert self.is_element_visible(*self.ADD_TO_COMPARE_BUTTON), "Compare Product option missing."
 
         self.logger.info("view mode displays a single product with required options.")
 
@@ -302,6 +306,23 @@ class SearchPage(BasePage):
         self.open_url()
         self.enter_text(SearchPage.SEARCH_FIELD, search_multiple_products)
         self.click(SearchPage.SEARCH_BUTTON)
+
+        product_items = driver.find_elements(By.CLASS_NAME, "product-item")
+        assert len(product_items) > 1, "Multiple products not displayed as expected in the search results."
+        self.logger.info(f"Multiple products displayed: {len(product_items)} found.")
+
+    def pages_views_products(self, driver, load_test_data):
+        search_multiple_products = load_test_data["multiple_products_search"]["multiple_products"]
+
+        self.logger.info("Searching for multiple products.")
+        self.open_url()
+        self.enter_text(self.SEARCH_FIELD, search_multiple_products)
+        self.click(self.SEARCH_BUTTON)
+
+        self.scroll_to_footer()
+
+        self.click(self.NEXT_PAGE_BUTTON)
+        self.click(self.PREVIOUS_PAGE_BUTTON)
 
         product_items = driver.find_elements(By.CLASS_NAME, "product-item")
         assert len(product_items) > 1, "Multiple products not displayed as expected in the search results."
