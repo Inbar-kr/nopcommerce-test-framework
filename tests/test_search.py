@@ -1,18 +1,10 @@
-import time
 import pytest
 import json
 import allure
-import logging
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver import ActionChains, Keys
-
 from pages.login_page import LoginPage
 from pages.search_page import SearchPage
 from config.config import Config
 from allure_commons.types import Severity
-from tests.test_login import TestUserLogin
 
 @pytest.fixture(scope="module")
 def load_test_data():
