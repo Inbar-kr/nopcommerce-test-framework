@@ -26,8 +26,12 @@ It focuses on automating key functionalities like user registration, login, prod
 
 #### Pre-requisites
 * Python 3.12.2 or above
+
 * Google Chrome, Mozilla Firefox
 * ChromeDriver, GeckoDriver
+=======
+* Google Chrome, Mozilla Firefox, Microsoft Edge
+* ChromeDriver, GeckoDriver, EdgeDriver
 * GitLab CI configured on your system
 
 #### Installation Steps
@@ -48,8 +52,16 @@ For GitLab CI: Use the ci-cd-pipeline.yml file.
 ## How to Run Tests
 
 #### Local Execution
+
 Run all tests:
 `pytest`
+=======
+1. Run all tests:
+`pytest`
+2. Run specific test markers:.
+
+    Smoke Tests: pytest `-m smoke`
+    Regression Tests: `pytest -m regression`
 
 #### CI/CD Pipeline Execution
 * Commit your changes to the repository.

@@ -1,5 +1,9 @@
 name: CI/CD Pipeline with Selenium Tests
 
+<<<<<<< HEAD
+=======
+# Trigger workflow on push to the 'main' branch or pull requests to the 'main' branch
+>>>>>>> f9558c344f2b75a57510fa5f4d3b1b6593d8007d
 on:
   push:
     branches:
@@ -8,6 +12,10 @@ on:
     branches:
       - main
 
+<<<<<<< HEAD
+=======
+# Define the jobs for the workflow
+>>>>>>> f9558c344f2b75a57510fa5f4d3b1b6593d8007d
 jobs:
   selenium-tests:
     runs-on: windows-latest
@@ -18,7 +26,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
+<<<<<<< HEAD
           fetch-depth: 1
+=======
+          fetch-depth: 1  # Only fetch the latest commit to reduce checkout time
+>>>>>>> f9558c344f2b75a57510fa5f4d3b1b6593d8007d
 
       # 2. Set up Python environment
       - name: Set up Python
