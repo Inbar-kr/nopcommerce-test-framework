@@ -19,13 +19,13 @@ jobs:
     steps:
       # 1. Checkout the repository to get the code
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          fetch-depth: 1  # Only fetch the latest commit to reduce checkout time
+          fetch-depth: 1
 
       # 2. Set up Python environment
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12.2'
 
@@ -42,14 +42,14 @@ jobs:
 
       # 5. Upload Allure test results
       - name: Upload Allure Test Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
           path: reports/allure-results
 
       # 6. Upload Pytest HTML report
       - name: Upload Pytest HTML report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: pytest-html-report
           path: reports/pytest_html_report.html
