@@ -1,19 +1,19 @@
 # Core Dependencies
-selenium==4.13.0                # Selenium WebDriver library for browser automation
-pytest==8.3.4                   # Pytest framework for running and organizing tests
-pytest-html==4.1.0              # Plugin for generating test reports in HTML
-pytest-xdist==3.3.1             # For parallel test execution
+selenium==4.13.0
+pytest==8.3.4
+pytest-html==4.1.0
+pytest-xdist==3.3.1
 
 # Utilities
-requests==2.31.0                # For making HTTP requests (useful for API calls in tests)
-jsonschema==4.19.0              # For JSON validation
-webdriver-manager==4.0.2        # For automatic driver management (e.g., Chromedriver)
+requests==2.31.0
+jsonschema==4.19.0
+webdriver-manager==4.0.2
 
 # Logging and Configuration
-loguru==0.7.0                   # Advanced logging library for better log output
-python-dotenv==1.0.0            # For managing environment variables in a `.env` file
+loguru==0.7.0
+python-dotenv==1.0.0
 
 # Test Reporting and CI/CD
-allure-python-commons==2.13.5   # For Allure report generation
-allure-pytest==2.13.5           # Pytest integration for Allure
-pytest-cov==6.0.0               # For test coverage reporting
+allure-python-commons==2.13.5
+allure-pytest==2.13.5
+pytest-cov==6.0.0
