@@ -7,3 +7,4 @@ venv/
 .env
 .idea/
 .ropeproject
+reports/allure-report/index.html
