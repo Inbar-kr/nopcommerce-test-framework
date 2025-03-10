@@ -42,21 +42,21 @@ jobs:
 
       # 5. Upload Allure test results
       - name: Upload Allure Test Results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: reports/allure-results
 
-      # 6. Upload pytest HTML report
+      # 6. Upload Pytest HTML report
       - name: Upload Pytest HTML report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pytest-html-report
           path: reports/pytest_html_report.html
 
       # 7. Upload logs for debugging
       - name: Upload Logs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: logs
           path: reports/logs/  # Upload the log files for debugging
