@@ -26,18 +26,14 @@ It focuses on automating key functionalities like user registration, login, prod
 
 #### Pre-requisites
 * Python 3.12.2 or above
-
 * Google Chrome, Mozilla Firefox
 * ChromeDriver, GeckoDriver
-=======
-* Google Chrome, Mozilla Firefox, Microsoft Edge
-* ChromeDriver, GeckoDriver, EdgeDriver
 * GitLab CI configured on your system
 
 #### Installation Steps
 
 1. Clone the repository:
-git clone https://github.com/Inbar-kr/nopcommerce-test-framework.git
+ [git clone](https://github.com/Inbar-kr/nopcommerce-test-framework.git)
 `cd test_automation_framework`
 
 2. Install dependencies:
@@ -53,9 +49,6 @@ For GitLab CI: Use the ci-cd-pipeline.yml file.
 
 #### Local Execution
 
-Run all tests:
-`pytest`
-=======
 1. Run all tests:
 `pytest`
 2. Run specific test markers:.
@@ -72,5 +65,8 @@ Run all tests:
 Allure Reports: Automatically generated in reports/allure-results. View reports with:
 `allure serve reports/allure-results`
 
+## Test Run Reports
+1. [Test Run Summary](https://test-management.browserstack.com/projects/343197/reports/27682?public_token=c193e9f680fb7098065237a261b13b6be7ea8c8c09c18e5496255752e1e403dce359ed068f3c9421ce3ac29a4c7546818050a6a04ebb6824dada72e94a48a95b&public_token_id=1361)
+2. [Test Run - nopCommerce Test Cases](https://test-management.browserstack.com/projects/343197/test-runs/TR-18?public_token=562d57b5dd3a7f3292cfe08ea247426569ef028817ba85e9790cc374460779d36453e2fe70088dc87e90396e83bb4288dd844dd24720f9d271c822b1bd26b273&public_token_id=1362)
 
 ###### Note: This project is a private repository created for personal and portfolio purposes. It is not intended for redistribution or external use.
