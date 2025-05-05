@@ -12,7 +12,7 @@ class DriverFactory:
     @staticmethod
     def get_driver():
         """Initialize WebDriver based on browser and headless settings."""
-        browser = Config.BROWSER
+        browser = Config.BROWSERQ
         logging.info(f"Initializing WebDriver for {browser} browser.")
 
         if browser == "chrome":
@@ -36,7 +36,7 @@ class DriverFactory:
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
 
-        driver = uc.Chrome(options=chrome_options, use_subprocess=True)
+        driver = uc.Chrome(options=chrome_options, use_subprocess=True, version_main=135)
 
         driver.implicitly_wait(Config.IMPLICIT_WAIT)
 
