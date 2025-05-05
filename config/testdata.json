@@ -37,7 +37,7 @@
     }
   },
   "product_search": {
-    "valid_product": "Lenovo Thinkpad X1 Carbon Laptop",
+    "valid_product": "Lenovo Thinkpad Carbon Laptop",
     "invalid_product": "NonExistentProduct"
   },
   "products_search": {
