@@ -25,7 +25,7 @@ It focuses on automating key functionalities like user registration, login, prod
 ## Setup and Installation
 
 #### Pre-requisites
-* Python 3.12.2 or above
+* Python 3.10 or above
 * Google Chrome, Mozilla Firefox
 * ChromeDriver, GeckoDriver
 * GitLab CI configured on your system
