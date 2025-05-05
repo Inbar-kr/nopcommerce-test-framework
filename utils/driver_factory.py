@@ -12,7 +12,7 @@ class DriverFactory:
     @staticmethod
     def get_driver():
         """Initialize WebDriver based on browser and headless settings."""
-        browser = Config.BROWSERQ
+        browser = Config.BROWSER
         logging.info(f"Initializing WebDriver for {browser} browser.")
 
         if browser == "chrome":
