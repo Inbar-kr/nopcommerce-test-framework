@@ -8,12 +8,12 @@ pytest-xdist==3.3.1
 requests==2.31.0
 jsonschema==4.19.0
 webdriver-manager==4.0.2
-undetected-chromedriver
-packaging
+undetected-chromedriver==3.5.5
 
 # Logging and Configuration
 loguru==0.7.0
 python-dotenv==1.0.0
+pyperclip==1.8.2
 
 # Test Reporting and CI/CD
 allure-python-commons==2.13.5

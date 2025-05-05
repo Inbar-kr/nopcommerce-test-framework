@@ -10,7 +10,7 @@ It focuses on automating key functionalities like user registration, login, prod
 
 * Automated functional tests for critical nopCommerce features.
 * Cross-browser testing on Chrome, Firefox, and Edge.
-* CI/CD integration using Jenkins/GitLab CI for automated test execution.
+* CI/CD integration using GitLab CI for automated test execution.
 * Detailed reporting with Allure for test logs, screenshots of failed tests.
 * Parallel execution to reduce test execution time.
 
