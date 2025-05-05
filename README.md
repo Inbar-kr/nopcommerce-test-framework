@@ -38,7 +38,7 @@ It focuses on automating key functionalities like user registration, login, prod
 
 2. Install dependencies:
 `pip install -r requirements.txt`
-3. Set up your browser drivers (ChromeDriver, GeckoDriver, EdgeDriver).
+3. Set up your browser drivers (ChromeDriver, GeckoDriver).
 4. Configure the CI/CD pipeline:
 For GitLab CI: Use the ci-cd-pipeline.yml file.
 5. Generate Allure reports:
