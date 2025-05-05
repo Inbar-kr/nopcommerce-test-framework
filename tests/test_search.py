@@ -103,9 +103,13 @@ class TestUserSearch:
     @allure.description(
         "This test validates that searching for a product using text from its description returns the correct product in the search results.")
     def test_search_using_product_description(self, driver, load_test_data):
+        search_data = load_test_data["product_description_search"]["product_description_text"]
         search_page = SearchPage(driver)
 
-        search_page.search_using_product_description(driver, load_test_data)
+        search_page.open_url()
+        search_page.search_with_description(search_data)
+        search_page.select_first_product()
+        search_page._validate_product_description(search_data)
 
         search_page.logger.info("Search successful using product description.")
 
@@ -163,8 +167,12 @@ class TestUserSearch:
         "This test validates that products can be added to the compare list from the search results page and verifies that the user is navigated to the Product Compare Page.")
     def test_add_to_compare_page_from_search_results(self, driver, load_test_data):
         search_page = SearchPage(driver)
+        search_text = load_test_data["multiple_products_search"]["multiple_products"]
 
-        search_page.compare_products(driver, load_test_data)
+        search_page.open_search_results(search_text)
+        search_page.add_products_to_compare()
+        search_page.navigate_to_compare_page()
+        search_page.validate_compare_page_display()
 
         search_page.logger.info("Search successful by viewing that adding to Product Compare Page from Search Results page.")
 
@@ -175,10 +183,18 @@ class TestUserSearch:
         "This test validates that products can be sorted according to the selected option from the 'Sort By' dropdown on the Search Results page.")
     def test_sort_products_in_search_results(self, driver, load_test_data):
         search_page = SearchPage(driver)
+        search_text = load_test_data["multiple_products_search"]["multiple_products"]
+        sort_options = load_test_data.get("sort_options", [])
 
-        search_page.sort_products(driver, load_test_data)
+        assert sort_options, "Sort options list is empty."
 
-        search_page.logger.info("Search successful by viewing that the products can be sorted according to the selected option.")
+        search_page.open_search_results(search_text)
+        search_page._validate_multiple_products_found(search_page.PRODUCT_ITEM)
+
+        for option in sort_options:
+            search_page.apply_sort_option_and_validate(option)
+
+        search_page.logger.info("Successfully validated sorting for all provided options.")
 
     @allure.story("TC_SF_015: Validate the User can select how many products can be displayed in the Search Results")
     @allure.severity(Severity.NORMAL)

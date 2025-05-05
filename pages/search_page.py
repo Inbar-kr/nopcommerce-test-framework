@@ -7,7 +7,7 @@ from pages.base_page import BasePage
 import time
 
 class SearchPage(BasePage):
-    # Locators for elements on the Search page
+    # --- Locators ---
     SEARCH_FIELD = (By.ID, "small-searchterms")
     SEARCH_BUTTON = (By.XPATH, "//button[@class='button-1 search-box-button']")
     SEARCH_KEYWORD_FIELD = (By.ID, "q")
@@ -50,6 +50,7 @@ class SearchPage(BasePage):
     def open_url(self, url="https://demo.nopcommerce.com/"):
         self.driver.get(url)
 
+    # Search and Validation
     def _search_for_product(self, search_data):
         self.enter_text(self.SEARCH_FIELD, search_data)
         self.click(self.SEARCH_BUTTON)
@@ -67,12 +68,10 @@ class SearchPage(BasePage):
             "No products found for the invalid product."
         self.logger.info("Error message for invalid product displayed.")
 
-    def _click_first_product_in_results(self):
-        search_results = self.driver.find_elements(By.CSS_SELECTOR, ".product-item")  # Ensure it's a string class name
-        assert search_results, "No search results available"
-        first_product = search_results[0]
-        first_product.find_element(By.CLASS_NAME, "picture").click()
-        self.logger.info("Clicked on the first product in search results.")
+    def _validate_multiple_products_found(self, locator):
+        product_items = self.get_elements(locator)
+        assert len(product_items) > 1, "Search results did not return multiple products."
+        self.logger.info(f"Found {len(product_items)} products in search results.")
 
     def _validate_product_description(self, search_data_description):
         self.wait_for_element(self.DESCRIPTION_FIELD)
@@ -81,55 +80,6 @@ class SearchPage(BasePage):
         assert search_data_description in full_description, \
             f"The product description does not contain '{search_data_description}'. Full description found: {full_description}"
         self.logger.info("Validated product description successfully.")
-
-    def _validate_multiple_products_found(self, locator):
-        product_items = self.get_elements(locator)
-        assert len(product_items) > 1, "Search results did not return multiple products."
-        self.logger.info(f"Found {len(product_items)} products in search results.")
-
-    def _apply_sort_option_and_validate(self, driver, option):
-        self.select_dropdown_option(self.SORT_BY_DROPDOWN, option)
-
-        time.sleep(2)
-        WebDriverWait(driver, 20).until(
-            EC.presence_of_all_elements_located((By.CLASS_NAME, "price"))
-        )
-
-        product_items = self.get_elements(self.PRODUCT_ITEM)
-
-        product_names = [
-            product.find_element(By.CLASS_NAME, "product-title").text for product in product_items
-        ]
-        product_prices = [
-            float(product.find_element(By.CLASS_NAME, "prices")
-                  .find_element(By.CLASS_NAME, "actual-price")
-                  .text.replace("$", "").replace(",", "")) for product in product_items
-        ]
-
-        self.logger.info(f"Before sorting by {option}:")
-        self.logger.info(f"Product Names: {product_names}")
-        self.logger.info(f"Product Prices: {product_prices}")
-
-        if option == "Price: Low to High":
-            sorted_prices = sorted(product_prices)
-            self.logger.info(f"Sorted prices (Low to High): {sorted_prices}")
-            assert product_prices == sorted_prices, f"Products are not sorted by {option}. Expected {sorted_prices} but got {product_prices}."
-        elif option == "Price: High to Low":
-            sorted_prices = sorted(product_prices, reverse=True)
-            self.logger.info(f"Sorted prices (High to Low): {sorted_prices}")
-            assert product_prices == sorted_prices, f"Products are not sorted by {option}. Expected {sorted_prices} but got {product_prices}."
-        elif option == "Name: A to Z":
-            self.logger.info(f"Product names (A to Z): {sorted(product_names)}")
-            assert product_names == sorted(
-                product_names), f"Products are not sorted by {option}. Expected {sorted(product_names)} but got {product_names}."
-        elif option == "Name: Z to A":
-            self.logger.info(f"Product names (Z to A): {sorted(product_names, reverse=True)}")
-            assert product_names == sorted(product_names,
-                                           reverse=True), f"Products are not sorted by {option}. Expected {sorted(product_names, reverse=True)} but got {product_names}."
-        elif option == "Created on":
-            self.logger.info("Sorting by 'Created on' is not implemented yet.")
-
-        self.logger.info(f"Validated sorting by option: {option}")
 
     def _search_with_category(self, product, category):
         self.open_url()
@@ -188,24 +138,6 @@ class SearchPage(BasePage):
 
         self.logger.info(f"Attempted to search for multiple products: {search_data}")
 
-    def validate_placeholders(self, driver):
-        self.open_url()
-
-        expected_placeholders = {self.SEARCH_FIELD: "Search store"}
-
-        for field_locator, expected_placeholder in expected_placeholders.items():
-            self._validate_placeholder_for_field(driver, field_locator, expected_placeholder)
-
-    def _validate_placeholder_for_field(self, driver, field_locator, expected_placeholder):
-        field = self.wait_for_element(field_locator, timeout=10)
-        if field:
-            actual_placeholder = field.get_attribute("placeholder")
-            assert actual_placeholder == expected_placeholder, \
-                f"Placeholder mismatch! Expected: '{expected_placeholder}', but got: '{actual_placeholder}'"
-            self.logger.info(f"Placeholder for field '{field_locator}' is correct.")
-        else:
-            self.logger.error(f"Field '{field_locator}' not found.")
-
     def search_using_search_keyboard_field(self, driver, load_test_data):
         invalid_product = load_test_data["product_search"]["invalid_product"]
         self.open_url()
@@ -223,27 +155,118 @@ class SearchPage(BasePage):
 
         self.logger.info("Search completed successfully using the search keyword field.")
 
-    def search_using_product_description(self, driver, load_test_data):
-        search_data_description = load_test_data["product_description_search"]["product_description_text"]
+    def search_using_keyboard_keys(self, driver, load_test_data):
+        search_data_valid = load_test_data["product_search"]["valid_product"]
 
         self.open_url()
 
-        self.enter_text(SearchPage.SEARCH_FIELD, search_data_description)
-        self.click(SearchPage.SEARCH_BUTTON)
+        search_field = driver.find_element(*SearchPage.SEARCH_FIELD)
+        search_field.send_keys(search_data_valid)
 
-        self.wait_for_element(SearchPage.ITEM_GRID)
+        search_field.send_keys(Keys.TAB)
+        search_field.send_keys(Keys.ENTER)
 
         search_results = driver.find_elements(By.CSS_SELECTOR, ".product-item")
-        assert len(search_results) > 0, "No products found using the description text."
+        assert len(search_results) > 0, "No products found in the search results."
 
+        assert any(search_data_valid in result.text for result in search_results), \
+            f"The product '{search_data_valid}' is not found in the search results."
+
+        self.logger.info("Attempted to search using keyboard keys.")
+
+
+    # Product Interaction
+    def _click_first_product_in_results(self):
+        search_results = self.driver.find_elements(By.CSS_SELECTOR, ".product-item")
+        assert search_results, "No search results available"
         first_product = search_results[0]
         first_product.find_element(By.CLASS_NAME, "picture").click()
+        self.logger.info("Clicked on the first product in search results.")
 
-        self.wait_for_element((By.CLASS_NAME, "full-description"))
-        full_description = driver.find_element(By.CLASS_NAME, "full-description").text
+    def select_first_product(self):
+        self.wait_for_element(self.ITEM_GRID)
+        products = self.driver.find_elements(*self.PRODUCT_ITEM)
+        assert products, "No products found in the item grid."
+        self.logger.info(f"Found {len(products)} product(s) in grid.")
+        products[0].find_element(By.CLASS_NAME, "picture").click()
+        self.logger.info("Clicked the first product.")
 
-        assert search_data_description in full_description, \
-            f"The product description does not contain '{search_data_description}'. Full description found: {full_description}"
+    def search_with_description(self, search_text):
+        self.enter_text(self.SEARCH_FIELD, search_text)
+        self.click(self.SEARCH_BUTTON)
+        self.logger.info(f"Entered search text: {search_text}")
+
+        self.click(self.ADVANCED_SEARCH_CHECKBOX)
+        self.click(self.PRODUCT_DESC_SEARCH_CHECKBOX)
+        self.click(self.SEARCH_KEYWORD_BUTTON)
+        self.logger.info("Enabled advanced search with product description.")
+
+    def add_products_to_compare(self):
+        product_items = self.get_elements((By.CLASS_NAME, "product-item"))
+        assert len(product_items) > 1, "Less than two products found for comparison."
+
+        product_items[0].find_element(*self.ADD_TO_COMPARE_BUTTON).click()
+        time.sleep(2)
+        product_items[1].find_element(*self.ADD_TO_COMPARE_BUTTON).click()
+        time.sleep(2)
+
+    def navigate_to_compare_page(self):
+        self.click(self.COMPARE_PRODUCT_LINK)
+        WebDriverWait(self.driver, 10).until(EC.url_contains("compare"))
+        assert "compare" in self.driver.current_url, "User was not navigated to the Product Compare Page."
+
+    def validate_compare_page_display(self):
+        compare_product_items = self.get_elements((By.XPATH, "//tr[contains(@class, 'product-name') or "
+                                                             "contains(@class, 'product-price') or "
+                                                             "contains(@class, 'specification')]"))
+        visible_items = [item for item in compare_product_items if item.is_displayed()]
+        assert len(visible_items) >= 2, "Less than two visible products are displayed in the Compare page."
+
+        self.logger.info("Successfully validated the products on the compare page.")
+
+
+    # Sorting and Filtering
+    def apply_sort_option_and_validate(self, option):
+        self.select_dropdown_option(self.SORT_BY_DROPDOWN, option)
+        time.sleep(2)
+
+        WebDriverWait(self.driver, 20).until(
+            EC.presence_of_all_elements_located((By.CLASS_NAME, "price"))
+        )
+
+        product_items = self.get_elements(self.PRODUCT_ITEM)
+
+        product_names = [
+            product.find_element(By.CLASS_NAME, "product-title").text
+            for product in product_items
+        ]
+        product_prices = [
+            float(product.find_element(By.CLASS_NAME, "prices")
+                  .find_element(By.CLASS_NAME, "actual-price")
+                  .text.replace("$", "").replace(",", ""))
+            for product in product_items
+        ]
+
+        self.logger.info(f"Product Names: {product_names}")
+        self.logger.info(f"Product Prices: {product_prices}")
+
+        if option == "Price: Low to High":
+            expected = sorted(product_prices)
+            assert product_prices == expected, f"Expected {expected}, got {product_prices}"
+        elif option == "Price: High to Low":
+            expected = sorted(product_prices, reverse=True)
+            assert product_prices == expected, f"Expected {expected}, got {product_prices}"
+        elif option == "Name: A to Z":
+            expected = sorted(product_names)
+            assert product_names == expected, f"Expected {expected}, got {product_names}"
+        elif option == "Name: Z to A":
+            expected = sorted(product_names, reverse=True)
+            assert product_names == expected, f"Expected {expected}, got {product_names}"
+        elif option == "Created on":
+            self.logger.info("Sorting by 'Created on' is not implemented.")
+            return
+
+        self.logger.info(f"Sorting validated successfully for option: {option}")
 
     def search_by_category(self, load_test_data):
         valid_product = load_test_data["product_search"]["valid_product"]
@@ -271,6 +294,22 @@ class SearchPage(BasePage):
         search_results = self.driver.find_elements(By.CSS_SELECTOR, ".product-item")
         assert len(search_results) > 0, "No products found when searching with subcategories enabled."
         self.logger.info("Successfully searched with subcategory filter enabled.")
+
+    def validate_placeholders(self, driver):
+        self.open_url()
+
+        expected_placeholders = {self.SEARCH_FIELD: "Search store"}
+
+        for field_locator, expected_placeholder in expected_placeholders.items():
+            self._validate_placeholder_for_field(driver, field_locator, expected_placeholder)
+
+
+    # Views and Display
+    def open_search_results(self, search_text):
+        self.open_url("https://demo.nopcommerce.com/")
+        self.enter_text((By.ID, "small-searchterms"), search_text)
+        self.click((By.XPATH, "//button[@class='button-1 search-box-button']"))
+        self.wait_for_element(self.PRODUCT_ITEM)
 
     def validate_product_display(self, driver, view_mode):
         self.click(view_mode)
@@ -328,58 +367,6 @@ class SearchPage(BasePage):
         assert len(product_items) > 1, "Multiple products not displayed as expected in the search results."
         self.logger.info(f"Multiple products displayed: {len(product_items)} found.")
 
-    def compare_products(self, driver, load_test_data):
-        search_criteria = load_test_data["multiple_products_search"]["multiple_products"]
-
-        self.open_url()
-
-        self.enter_text(SearchPage.SEARCH_FIELD, search_criteria)
-        self.click(SearchPage.SEARCH_BUTTON)
-
-        product_items = driver.find_elements(By.CLASS_NAME, "product-item")
-        assert len(product_items) > 1, "Less than two products found for comparison."
-
-        product_items = driver.find_elements(By.CLASS_NAME, "product-item")
-        assert len(product_items) > 1, "Less than two products found for comparison."
-
-        product_items[0].find_element(*SearchPage.ADD_TO_COMPARE_BUTTON).click()
-        time.sleep(2)
-
-        product_items[1].find_element(*SearchPage.ADD_TO_COMPARE_BUTTON).click()
-        time.sleep(2)
-
-        self.click(SearchPage.COMPARE_PRODUCT_LINK)
-        assert "compare" in driver.current_url, "User was not navigated to the Product Compare Page."
-
-        WebDriverWait(driver, 10).until(EC.visibility_of_all_elements_located((By.CSS_SELECTOR, "tr.product-picture")))
-
-        compare_product_items = driver.find_elements(By.XPATH,
-                                                     "//tr[contains(@class, 'product-name') or "
-                                                     "contains(@class, 'product-price') or "
-                                                     "contains(@class, 'specification')]"
-                                                     )
-        visible_items = [item for item in compare_product_items if item.is_displayed()]
-
-        assert len(visible_items) >= 2, "Less than two visible products are displayed in the Compare page."
-
-        self.logger.info("Attempted to search products and add them to the compare list.")
-
-    def sort_products(self, driver, load_test_data):
-        search_criteria = load_test_data["multiple_products_search"]["multiple_products"]
-        sort_options = load_test_data.get("sort_options", [])
-        assert sort_options, "Sort options list is empty."
-
-        self.open_url()
-        self.enter_text(self.SEARCH_FIELD, search_criteria)
-        self.click(self.SEARCH_BUTTON)
-
-        self._validate_multiple_products_found(self.PRODUCT_ITEM)
-
-        for option in sort_options:
-            self._apply_sort_option_and_validate(driver, option)
-
-        self.logger.info("Successfully validated sorting for all provided options.")
-
     def display_number_of_products(self, driver, load_test_data):
         search_criteria = load_test_data["multiple_products_search"]["multiple_products"]
         display_options = ["3", "6", "9", "18"]
@@ -427,6 +414,17 @@ class SearchPage(BasePage):
 
         self.logger.info("Attempted to display the search box on all the pages.")
 
+    # Helper Functions
+    def _validate_placeholder_for_field(self, driver, field_locator, expected_placeholder):
+        field = self.wait_for_element(field_locator, timeout=10)
+        if field:
+            actual_placeholder = field.get_attribute("placeholder")
+            assert actual_placeholder == expected_placeholder, \
+                f"Placeholder mismatch! Expected: '{expected_placeholder}', but got: '{actual_placeholder}'"
+            self.logger.info(f"Placeholder for field '{field_locator}' is correct.")
+        else:
+            self.logger.error(f"Field '{field_locator}' not found.")
+
     def navigate_from_sitemap(self, driver):
         self.open_url()
         self.scroll_to_footer()
@@ -440,25 +438,6 @@ class SearchPage(BasePage):
         current_url = driver.current_url
         assert "search" in current_url, f"User was not navigated to the 'Search' page. Current URL: {current_url}"
         self.logger.info(f"User successfully navigated to the Search page. Current URL: {current_url}")
-
-    def search_using_keyboard_keys(self, driver, load_test_data):
-        search_data_valid = load_test_data["product_search"]["valid_product"]
-
-        self.open_url()
-
-        search_field = driver.find_element(*SearchPage.SEARCH_FIELD)
-        search_field.send_keys(search_data_valid)
-
-        search_field.send_keys(Keys.TAB)
-        search_field.send_keys(Keys.ENTER)
-
-        search_results = driver.find_elements(By.CSS_SELECTOR, ".product-item")
-        assert len(search_results) > 0, "No products found in the search results."
-
-        assert any(search_data_valid in result.text for result in search_results), \
-            f"The product '{search_data_valid}' is not found in the search results."
-
-        self.logger.info("Attempted to search using keyboard keys.")
 
     def heading_url_and_title(self, driver, load_test_data):
         search_data_valid = load_test_data["product_search"]["valid_product"]

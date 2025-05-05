@@ -38,7 +38,7 @@ jobs:
       # 4. Run Pytest tests
       - name: Run Pytest tests
         run: |
-          pytest --maxfail=5 --disable-warnings --alluredir=reports/allure-results
+          pytest --maxfail=10 --disable-warnings --alluredir=reports/allure-results
 
       # 5. Upload Allure test results
       - name: Upload Allure Test Results

@@ -12,7 +12,7 @@ from pages.base_page import BasePage
 
 
 class LoginPage(BasePage):
-    # Locators for elements on the Login page
+    # --- Locators ---
     EMAIL_FIELD = (By.ID, "Email")
     EMAIL_ERROR = (By.ID, "Email-error")
     PASSWORD_FIELD = (By.ID, "Password")
@@ -43,11 +43,31 @@ class LoginPage(BasePage):
         self.logger = logging.getLogger("LoginPage")
         logging.basicConfig(level=logging.INFO)
 
+    # --- Page Actions ---
     def open_url(self, url="https://demo.nopcommerce.com/login?returnUrl=%2F"):
         self.driver.get(url)
 
+    def click_submit_login(self):
+        self.click(self.SUBMIT_LOGIN_BUTTON)
+
+    def click_logout(self):
+        self.click(self.LOGOUT_BUTTON)
+
+    def click_forgot_password(self):
+        self.click(self.FORGOT_PASSWORD_LINK)
+
+    def click_remember_me(self):
+        self.click(self.REMEMBER_ME_CHECKBOX)
+
+    def close_popup(self):
+        self.click(self.POPUP_CLOSE_BUTTON)
+
+    # Filling Methods
+    def enter_login_credentials(self, email, password):
+        self.enter_text(self.EMAIL_FIELD, email)
+        self.enter_text(self.PASSWORD_FIELD, password)
+
     def submit_login_form(self):
-        self.logger.info("Submitting the login form.")
         self.click(self.LOGIN_BUTTON)
 
     # Helper methods to save and load cookies
@@ -64,6 +84,28 @@ class LoginPage(BasePage):
             for cookie in cookies:
                 driver.add_cookie(cookie)
 
+
+    def select_password_text_and_right_click(self):
+        password_field = self.get_element(self.PASSWORD_FIELD)
+        actions = ActionChains(self.driver)
+        actions.double_click(password_field).context_click(password_field).perform()
+        self.logger.info("Selected password text and opened context menu.")
+
+    def select_password_text(self):
+        password_field = self.get_element(self.PASSWORD_FIELD)
+        ActionChains(self.driver).double_click(password_field).perform()
+        self.logger.info("Selected password text.")
+
+    def press_ctrl_c(self):
+        password_field = self.get_element(self.PASSWORD_FIELD)
+        password_field.send_keys(Keys.CONTROL, 'c')
+        self.logger.info("Pressed Ctrl+C to copy password.")
+
+    def copy_from_context_menu(self):
+        ActionChains(self.driver).send_keys(Keys.ARROW_DOWN).send_keys(Keys.RETURN).perform()
+        self.logger.info("Selected copy from context menu.")
+
+    # Validation Methods
     def is_password_hidden(self):
         password_field = self.wait_for_element(*self.PASSWORD_FIELD)
         password_type = password_field.get_attribute("type")
@@ -80,52 +122,15 @@ class LoginPage(BasePage):
         else:
             assert self.is_password_hidden(), "Password field should be hidden."
 
+    # Toggles
     def toggle_password_visibility(self):
-        password_field = self.wait_for_element(*self.PASSWORD_FIELD)
-
-        if password_field.get_attribute("type") == "password":
-            self.driver.execute_script("arguments[0].setAttribute('type', 'text');", password_field)
-        else:
-            self.driver.execute_script("arguments[0].setAttribute('type', 'password');", password_field)
-
-        self.logger.info("Password visibility toggled.")
-
-    def select_password_text_and_right_click(self):
         password_field = self.get_element(self.PASSWORD_FIELD)
-        action_chains = ActionChains(self.driver)
-        action_chains.double_click(password_field).context_click(password_field).perform()
-        self.logger.info("Selected password text and opened the context menu.")
+        current_type = password_field.get_attribute("type")
+        new_type = "text" if current_type == "password" else "password"
+        self.driver.execute_script("arguments[0].setAttribute('type', arguments[1]);", password_field, new_type)
+        self.logger.info(f"Toggled password visibility to: {new_type}")
 
-    def copy_from_context_menu(self):
-        action_chains = ActionChains(self.driver)
-        action_chains.send_keys(Keys.ARROW_DOWN).send_keys(Keys.RETURN).perform()
-        self.logger.info("Attempted to copy text using the context menu.")
 
-    def select_password_text(self):
-        password_field = self.get_element(self.PASSWORD_FIELD)
-        action_chains = ActionChains(self.driver)
-        action_chains.double_click(password_field).perform()
-        self.logger.info("Selected password text.")
-
-    def press_ctrl_c(self):
-        password_field = self.get_element(self.PASSWORD_FIELD)
-        password_field.send_keys(Keys.CONTROL, 'c')
-        self.logger.info("Pressed Ctrl+C to attempt to copy the password text.")
-        
-    def navigation_from_login_page(self, driver):
-        self.open_url()
-        self.click(LoginPage.LOGIN_BUTTON)
-        self.click(LoginPage.REGISTER_BUTTON)
-
-        assert driver.current_url == "https://demo.nopcommerce.com/register?returnUrl=%2F", \
-            "User was not navigated to the Register Account page."
-
-        driver.back()
-
-        self.click(LoginPage.SITEMAP_LINK)
-
-        assert driver.current_url == "https://demo.nopcommerce.com/sitemap", \
-            "User was not navigated to the Sitemap page."
 
     def login_user(self, driver, load_test_data):
         registration_test = TestUserRegistration()
@@ -134,24 +139,22 @@ class LoginPage(BasePage):
         test_data = load_test_data['mandatory_fields']
 
         if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
-            self.click(self.LOGOUT_BUTTON)
+            self.click_logout()
 
         self.click(self.LOGIN_BUTTON)
-        self.enter_text(self.EMAIL_FIELD, test_data['email'])
-        self.enter_text(self.PASSWORD_FIELD, test_data['password'])
-        self.click(self.SUBMIT_LOGIN_BUTTON)
+        self.enter_login_credentials(test_data['email'], test_data['password'])
+        self.click_submit_login()
 
         self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
-        assert self.is_element_visible(By.CLASS_NAME,
-                                       self.MY_ACCOUNT_LINK[1]), "Login failed. User account/dashboard not displayed."
+        assert self.is_element_visible(By.CLASS_NAME, self.MY_ACCOUNT_LINK[1]), \
+            "Login failed. User account/dashboard not displayed."
         self.logger.info("Login successful.")
 
     def login_user_without_register(self, load_test_data):
         test_data = load_test_data['mandatory_fields']
 
-        self.enter_text(self.EMAIL_FIELD, test_data['email'])
-        self.enter_text(self.PASSWORD_FIELD, test_data['password'])
-        self.click(self.SUBMIT_LOGIN_BUTTON)
+        self.enter_login_credentials(test_data['email'], test_data['password'])
+        self.click_submit_login()
 
         self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
         assert self.is_element_visible(By.CLASS_NAME,
@@ -162,7 +165,7 @@ class LoginPage(BasePage):
         locator_strategy, locator_value = self.LOGOUT_BUTTON
 
         if self.is_element_visible(locator_strategy, locator_value):
-            self.click(self.LOGOUT_BUTTON)
+            self.click_logout()
             self.logger.info("Logged out successfully.")
         else:
             self.logger.warning("Logout button is not visible; user might already be logged out.")
@@ -175,7 +178,7 @@ class LoginPage(BasePage):
         self.enter_text(self.EMAIL_FIELD, test_data["username"])
         self.enter_text(self.PASSWORD_FIELD, test_data["password"])
 
-        self.click(self.SUBMIT_LOGIN_BUTTON)
+        self.click_submit_login()
 
         self.wait_for_element_to_be_visible(self.ERROR_MESSAGE)
 
@@ -190,12 +193,12 @@ class LoginPage(BasePage):
         invalid_email_data = {"username": "invalidemail@example.com"}
 
         if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
-            self.click(self.LOGOUT_BUTTON)
+            self.click_logout()
 
         self.click(self.LOGIN_BUTTON)
         self.enter_text(self.EMAIL_FIELD, invalid_email_data['username'])
         self.enter_text(self.PASSWORD_FIELD, test_data['password'])
-        self.click(self.SUBMIT_LOGIN_BUTTON)
+        self.click_submit_login()
 
         self.wait_for_element_to_be_visible(self.ERROR_MESSAGE)
         assert self.is_element_visible(By.CLASS_NAME, self.ERROR_MESSAGE[1]), "Login failed with invalid email. Error message not displayed."
@@ -211,12 +214,12 @@ class LoginPage(BasePage):
         invalid_password_data = {"password": "InvalidPassword123!"}
 
         if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
-            self.click(self.LOGOUT_BUTTON)
+            self.click_logout()
 
         self.click(self.LOGIN_BUTTON)
         self.enter_text(self.EMAIL_FIELD, test_data['email'])
         self.enter_text(self.PASSWORD_FIELD, invalid_password_data['password'])
-        self.click(self.SUBMIT_LOGIN_BUTTON)
+        self.click_submit_login()
 
         self.wait_for_element_to_be_visible(self.ERROR_MESSAGE)
         assert self.is_element_visible(By.CLASS_NAME, self.ERROR_MESSAGE[1]), "Login failed with invalid password. Error message not displayed."
@@ -228,12 +231,12 @@ class LoginPage(BasePage):
         registration_test.test_mandatory_fields_registration(driver, load_test_data)
 
         if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
-            self.click(self.LOGOUT_BUTTON)
+            self.click_logout()
 
         self.click(self.LOGIN_BUTTON)
         self.enter_text(self.EMAIL_FIELD, '')
         self.enter_text(self.PASSWORD_FIELD, '')
-        self.click(self.SUBMIT_LOGIN_BUTTON)
+        self.click_submit_login()
 
         self.wait_for_element_to_be_visible(self.MY_ACCOUNT_LINK)
         assert self.is_element_visible(By.CLASS_NAME,
@@ -247,7 +250,7 @@ class LoginPage(BasePage):
         test_data = load_test_data['mandatory_fields']
 
         if self.is_element_visible(By.XPATH, self.LOGOUT_BUTTON[1]):
-            self.click(self.LOGOUT_BUTTON)
+            self.click_logout()
 
         self.click(self.LOGIN_BUTTON)
         email_field = self.wait_for_element(*self.EMAIL_FIELD)
@@ -304,12 +307,13 @@ class LoginPage(BasePage):
     def forgotten_password_link(self, driver):
         self.open_url()
 
-        assert self.is_element_visible(LoginPage.FORGOT_PASSWORD_LINK[0], LoginPage.FORGOT_PASSWORD_LINK[1]), \
-            "'Forgotten Password' link is not visible on the Login page."
+        assert self.is_element_visible(*self.FORGOT_PASSWORD_LINK), \
+            "'Forgot password?' link is not visible on the Login page."
 
-        self.click(LoginPage.FORGOT_PASSWORD_LINK)
+        self.click_forgot_password()
 
-        assert driver.current_url == "https://demo.nopcommerce.com/passwordrecovery", \
+        expected_url = "https://demo.nopcommerce.com/passwordrecovery"
+        assert driver.current_url == expected_url, \
             f"Password reset page not reached. Current URL is {driver.current_url}."
 
     def password_copying(self, load_test_data):
@@ -417,6 +421,21 @@ class LoginPage(BasePage):
             assert self.is_element_visible(self.ERROR_MESSAGE[0], self.ERROR_MESSAGE[1]), \
                 "User was able to login with old password after password change."
             self.logger.info("Login failed with old password as expected.")
+
+    def navigation_from_login_page(self, driver):
+        self.open_url()
+        self.click(LoginPage.LOGIN_BUTTON)
+        self.click(LoginPage.REGISTER_BUTTON)
+
+        assert driver.current_url == "https://demo.nopcommerce.com/register?returnUrl=%2F", \
+            "User was not navigated to the Register Account page."
+
+        driver.back()
+
+        self.click(LoginPage.SITEMAP_LINK)
+
+        assert driver.current_url == "https://demo.nopcommerce.com/sitemap", \
+            "User was not navigated to the Sitemap page."
 
     def login_session_after_browser_restart(self, driver, load_test_data):
         self.open_url()
