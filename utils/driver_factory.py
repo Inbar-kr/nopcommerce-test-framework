@@ -1,4 +1,3 @@
-import os
 import undetected_chromedriver as uc
 from webdriver_manager.firefox import GeckoDriverManager
 from selenium.webdriver.firefox.service import Service as FirefoxService
