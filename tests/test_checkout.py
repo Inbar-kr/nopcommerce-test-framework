@@ -253,5 +253,3 @@ class TestCheckoutPage:
     )
     def test_checkout_functionality_in_all_environments(self, driver, load_test_data):
         pytest.skip()
-
-

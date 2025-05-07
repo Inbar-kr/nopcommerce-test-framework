@@ -82,7 +82,7 @@
   },
   "checkout_fields": {
     "mandatory_billing_address_section": {
-      "country_dropdown": "United States",
+      "country_dropdown": "United States of America",
       "state_dropdown": "California",
       "city": "Los Angeles",
       "address1": "1234 Elm St",
@@ -90,7 +90,7 @@
       "phone_number": "+1 (555) 123-4567"
     },
     "mandatory_shipping_address_section": {
-      "country_dropdown": "United States",
+      "country_dropdown": "United States of America",
       "state_dropdown": "New York",
       "city": "Buffalo",
       "address1": "1234 Parkside Ave",
@@ -99,7 +99,7 @@
     },
     "all_billing_address_section": {
       "company": "Company Name",
-      "country_dropdown": "United States",
+      "country_dropdown": "United States of America",
       "state_dropdown": "California",
       "city": "Los Angeles",
       "address1": "1234 Elm St",

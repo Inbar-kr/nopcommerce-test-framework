@@ -160,15 +160,24 @@ class BillingAddressSection(BasePage):
         self.driver.find_element(*self.CONTINUE_BUTTON).click()
         self.logger.info("Submitted the billing form without filling in any fields.")
 
-        alert_text = self.extract_alert_text()
+        try:
+            WebDriverWait(self.driver, 10).until(EC.alert_is_present())
+            alert = self.driver.switch_to.alert
+            alert_text = alert.text.strip()
+            self.logger.info(f"Alert text: {alert_text}")
 
-        expected_message_1 = "City is required, Street address is required, Country is required., Phone is required, Zip / postal code is required"
-        expected_message_2 = "City is required, Email is required., Street address is required, Last name is required., Country is required., First name is required., Phone is required, Zip / postal code is required"
+            expected_message_1 = "City is required, Street address is required, Phone is required, Zip / postal code is required, State / province is required."
+            expected_message_2 = "City is required, Email is required., Street address is required, Last name is required., First name is required., Phone is required, Zip / postal code is required, State / province is required."
 
-        assert alert_text == expected_message_1 or alert_text == expected_message_2, \
-            f"Unexpected alert message: '{alert_text}'. Expected one of: '{expected_message_1}' or '{expected_message_2}'"
+            assert alert_text == expected_message_1 or alert_text == expected_message_2, \
+                f"Unexpected alert message: '{alert_text}'"
 
-        self.close_popup()
+            alert.accept()
+            self.logger.info("Alert accepted.")
+
+        except Exception as e:
+            self.logger.error(f"Failed to handle alert: {e}")
+            raise
 
     def checkout_as_signed_in_user_with_new_address(self, driver, load_test_data):
         checkout_page = CheckoutPage(driver)

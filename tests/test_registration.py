@@ -19,7 +19,7 @@ class TestUserRegistration:
     @allure.story("TC_RF_001: Test mandatory fields during registration")
     @allure.severity(Severity.CRITICAL)
     @allure.label("Regression")
-    @allure.description("This test verifies that all mandatory fields in the registration form are filled in and the form is successfully submitted.")
+    @allure.description("Verifies that all mandatory fields in the registration form are filled in and the form is successfully submitted.")
     def test_mandatory_fields_registration(self, driver, load_test_data):
         registration_page = RegistrationPage(driver)
 

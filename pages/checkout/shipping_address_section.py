@@ -1,3 +1,4 @@
+from selenium.common import TimeoutException, UnexpectedAlertPresentException
 from selenium.webdriver.common.by import By
 from pages.base_page import BasePage
 from selenium.webdriver.support.select import Select
@@ -122,14 +123,21 @@ class ShippingAddressSection(BasePage):
     def submit_shipping_form_without_fields(self):
         self._select_dropdown(self.SHIPPING_ADDRESS_DROPDOWN, "New Address")
         self.driver.find_element(*self.CONTINUE_BUTTON).click()
-        self.logger.info("Submitted the billing form without filling in any fields.")
-        alert_text = self.extract_alert_text()
-        expected_message = ("City is required, Street address is required, Country is required., Phone is required, Zip / postal code is required")
+        self.logger.info("Clicked Continue button without filling shipping form.")
 
-        assert alert_text == expected_message, \
-            f"Unexpected alert message: '{alert_text}'. Expected: '{expected_message}'"
-
-        self.close_popup()
+        try:
+            alert = WebDriverWait(self.driver, 5).until(EC.alert_is_present())
+            alert_text = alert.text.strip()
+            expected_message = (
+                "City is required, Street address is required, Phone is required, "
+                "Zip / postal code is required, State / province is required."
+            )
+            assert alert_text == expected_message, f"Unexpected alert text: '{alert_text}'"
+            alert.accept()
+            self.logger.info("Alert dismissed.")
+        except (TimeoutException, UnexpectedAlertPresentException):
+            self.logger.error("Alert handling failed.")
+            raise
 
     def checkout_with_shipping_address(self, driver, load_test_data):
         checkout_page = CheckoutPage(driver)

@@ -372,26 +372,31 @@ class SearchPage(BasePage):
         display_options = ["3", "6", "9", "18"]
 
         self.open_url()
-
         self.enter_text(SearchPage.SEARCH_FIELD, search_criteria)
         self.click(SearchPage.SEARCH_BUTTON)
 
-        product_items = driver.find_elements(By.CLASS_NAME, "product-item")
-        assert len(product_items) > 1, "Search did not return multiple products as expected."
+        # Wait for search results to appear
+        WebDriverWait(driver, 10).until(
+            EC.visibility_of_all_elements_located((By.CLASS_NAME, "product-item"))
+        )
+
+        initial_items = [item for item in driver.find_elements(By.CLASS_NAME, "product-item") if item.is_displayed()]
+        assert len(initial_items) > 1, "Search did not return multiple products as expected."
 
         for option in display_options:
             self.select_dropdown_option(SearchPage.DISPLAY_DROPDOWN, option)
 
-            time.sleep(3)
-            WebDriverWait(driver, 20).until(
-                EC.presence_of_all_elements_located((By.CLASS_NAME, "product-item"))
+            WebDriverWait(driver, 10).until(
+                lambda d: len([e for e in d.find_elements(By.CLASS_NAME, "product-item") if e.is_displayed()]) <= int(
+                    option)
             )
 
-            product_items = driver.find_elements(By.CLASS_NAME, "product-item")
+            product_items = [item for item in driver.find_elements(By.CLASS_NAME, "product-item") if
+                             item.is_displayed()]
             assert len(product_items) <= int(
                 option), f"Expected up to {option} products, but found {len(product_items)}."
 
-        self.logger.info("Attempted to display the number of products as expected.")
+        self.logger.info("Successfully verified product count display for all dropdown options.")
 
     def search_box_displayed_on_all_pages(self, driver):
         pages_to_test = [

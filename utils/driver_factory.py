@@ -10,56 +10,44 @@ logging.basicConfig(level=logging.INFO)
 
 class DriverFactory:
     @staticmethod
-    def get_driver():
-        """Initialize WebDriver based on browser and headless settings."""
-        browser = Config.BROWSER
+    def get_driver(browser="chrome", headless=True):
         logging.info(f"Initializing WebDriver for {browser} browser.")
 
         if browser == "chrome":
-            return DriverFactory._get_undetected_chrome_driver()
+            return DriverFactory._get_undetected_chrome_driver(headless)
 
         if browser == "firefox":
-            return DriverFactory._get_firefox_driver()
+            return DriverFactory._get_firefox_driver(headless)
 
         raise ValueError(f"Unsupported browser: {browser}")
 
     @staticmethod
-    def _get_undetected_chrome_driver():
-        """Set up Undetected-Chromedriver with options."""
+    def _get_undetected_chrome_driver(headless):
         chrome_options = uc.ChromeOptions()
-
-        if Config.HEADLESS:
-            # chrome_options.add_argument("--headless")
-            chrome_options.add_argument("--disable-gpu")
-
+        if headless:
+            chrome_options.add_argument("--headless=chrome")
+        chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--window-size=1920,1080")
 
         driver = uc.Chrome(options=chrome_options, use_subprocess=True, version_main=135)
-
         driver.implicitly_wait(Config.IMPLICIT_WAIT)
-
-        logging.info("Undetected-Chromedriver initialized successfully.")
         return driver
 
     @staticmethod
-    def _get_firefox_driver():
-        """Set up Firefox with webdriver-manager."""
+    def _get_firefox_driver(headless):
         firefox_options = webdriver.FirefoxOptions()
 
-        if Config.HEADLESS:
-            # firefox_options.add_argument("--headless")
-            firefox_options.add_argument("--disable-gpu")
+        if headless:
+            firefox_options.add_argument("--headless")
+        firefox_options.add_argument("--width=1920")
+        firefox_options.add_argument("--height=1080")
+        firefox_options.add_argument("--disable-gpu")
 
-        firefox_options.add_argument("--disable-blink-features=AutomationControlled")
-        firefox_options.add_argument("--no-sandbox")
-        firefox_options.add_argument("--disable-dev-shm-usage")
-
-        firefox_service = FirefoxService(GeckoDriverManager().install())
-        driver = webdriver.Firefox(service=firefox_service, options=firefox_options)
-
+        service = FirefoxService(GeckoDriverManager().install())
+        driver = webdriver.Firefox(service=service, options=firefox_options)
         driver.implicitly_wait(Config.IMPLICIT_WAIT)
-
-        logging.info("Firefox driver initialized successfully.")
         return driver
+

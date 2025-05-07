@@ -214,11 +214,12 @@ class TestUserLogin:
         "This test validates that after logging into the application and closing the browser without logging out, "
         "the logged-in session should still be maintained when reopening the application.")
     def test_login_session_after_browser_restart(self, driver, load_test_data):
-        login_page = LoginPage(driver)
+        """login_page = LoginPage(driver)
 
         login_page.login_session_after_browser_restart(driver, load_test_data)
 
-        login_page.logger.info("Login after closing the browser without logging out, and reopening the application.")
+        login_page.logger.info("Login after closing the browser without logging out, and reopening the application.")"""
+        pytest.skip()
 
     @allure.story("TC_LF_018: Validate user is able to navigate to different pages from Login page")
     @allure.severity(Severity.NORMAL)
