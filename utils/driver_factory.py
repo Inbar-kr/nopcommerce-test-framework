@@ -5,17 +5,20 @@ from selenium.webdriver.chrome.options import Options
 from config.config import Config
 from selenium import webdriver
 import logging
+import os
 
 logging.basicConfig(level=logging.INFO)
 
 class DriverFactory:
     @staticmethod
-    def get_driver(browser="chrome", headless=True):
-        logging.info(f"Initializing WebDriver for {browser} browser.")
+    def get_driver():
+        browser = os.getenv("BROWSER", "chrome").lower()
+        headless = os.getenv("HEADLESS", "true").lower() == "true"
+
+        logging.info(f"Initializing WebDriver for '{browser}' browser. Headless mode: {headless}")
 
         if browser == "chrome":
             return DriverFactory._get_undetected_chrome_driver(headless)
-
         if browser == "firefox":
             return DriverFactory._get_firefox_driver(headless)
 
