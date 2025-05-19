@@ -81,7 +81,7 @@ class BasePage:
             return element
         except Exception as e:
             self.logger.error(f"Error while waiting for element {value}: {str(e)}")
-            return None
+            raise
 
     def wait_for_element_to_be_visible(self, locator, timeout=10):
         self.logger.info(f"Waiting for element to be visible: {locator}")

@@ -133,8 +133,12 @@ class RegistrationPage(BasePage):
 
         for field, value in mandatory_fields.items():
             input_field = self.wait_for_element(*field)
-            input_field.send_keys(value)
-            input_field.send_keys(Keys.TAB)
+            if input_field:
+                input_field.click()
+                input_field.send_keys(value)
+                input_field.send_keys(Keys.TAB)
+            else:
+                self.logger.error(f"Element {field} not found!")
 
         confirm_password_field = self.wait_for_element(*self.CONFIRM_PASSWORD_FIELD)
         confirm_password_field.send_keys(Keys.ENTER)
