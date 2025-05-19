@@ -60,7 +60,7 @@ It focuses on automating key functionalities like user registration, login, prod
 * Push or commit changes to the repository.  
 * GitHub Actions automatically triggers the pipeline.  
 * View the test execution results in the **Actions** tab on GitHub.
-###### Note: Some tests may fail in CI/CD due to CAPTCHA behavior in headless mode. Tests run successfully in headed (local) mode without issues.
+    ###### Note: Some tests may fail in CI/CD due to CAPTCHA behavior in headless mode. Tests run successfully in headed (local) mode without issues.
 
 ## Reporting
 Allure Reports: Automatically generated in reports/allure-results. View reports with:
