@@ -67,6 +67,6 @@ Allure Reports: Automatically generated in reports/allure-results. View reports 
 `allure serve reports/allure-results`
 
 ## Test Run Reports
-[Test Run - nopCommerce Test Cases](https://test-management.browserstack.com/projects/343197/test-runs/TR-18/folder?public_token=53ad5e810e198d3e4c63f5b0de70c98864aa0fd4da895e961991beb58594e653147bdb52bbb8c21181fab065ca8920bb3bd4c9dbab2b2b4643019143cd2a5b35&public_token_id=3216)
+[Test Run - nopCommerce Test Cases](https://test-management.browserstack.com/projects/343197/test-runs/TR-18/folder?public_token=d3acf8723cba94ec765133ef08ccf16525325a241765186336d8223f93bc8b9f824ae33314db19d0e79caa1f5a6bb085c10eabc63c83079f9390e7eb56e45f65&public_token_id=5063)
 
 ###### Note: This project is a personal and educational portfolio project. It is not intended for redistribution or external use.
