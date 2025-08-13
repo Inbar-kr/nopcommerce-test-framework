@@ -71,11 +71,10 @@ It focuses on automating key functionalities like user registration, login, prod
     Smoke Tests: pytest `-m smoke`
     Regression Tests: `pytest -m regression`
 
-#### CI/CD Pipeline Execution
-* Push or commit changes to the repository.  
-* GitHub Actions automatically triggers the pipeline.  
-* View the test execution results in the **Actions** tab on GitHub.
-    ###### Note: Some tests may fail in CI/CD due to CAPTCHA behavior in headless mode. Tests run successfully in headed (local) mode without issues.
+#### CI/CD Pipeline Integration
+This project leverages GitHub Actions for continuous integration. The workflow is defined in the `.github/workflows/ci.yml` file. It automatically runs the test suite on every push to the repository, providing immediate feedback on code changes.
+    
+###### Note: Some tests may fail in CI/CD due to CAPTCHA behavior in headless mode. Tests run successfully in headed (local) mode without issues.
 
 ## Reporting
 Allure Reports: Automatically generated in reports/allure-results. View reports with:
