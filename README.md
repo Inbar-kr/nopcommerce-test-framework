@@ -1,5 +1,8 @@
 # Selenium Test Suite for nopCommerce
 
+* **Stack:** Python, Selenium WebDriver, Pytest, GitHub Actions.
+* **Outcome:** Automated test suite for validating core functionalities of the nopCommerce platform, integrated into a CI/CD pipeline for continuous testing.
+
 ## Project Overview
 
 This project is an automated test suite for validating the functionality and performance of the nopCommerce platform.
