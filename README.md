@@ -2,8 +2,11 @@
 
 ## Project Overview
 
-This project is an automated test suite for validating the functionality and performance of the nopCommerce platform.  
-The test suite is built using Selenium WebDriver with Python (Pytest) and integrated into a CI/CD pipeline using GitHub Actions to ensure consistent and reliable test execution.  
+This project is an automated test suite for validating the functionality and performance of the nopCommerce platform.
+The test suite is built using Selenium WebDriver with Python (Pytest) and integrated into a CI/CD pipeline using GitHub Actions to ensure consistent and reliable test execution.
+
+Design Pattern: The framework follows the Page Object Model (POM) design pattern, which improves code readability, maintainability, and reusability by separating page-specific elements and actions into dedicated page classes.
+
 It focuses on automating key functionalities like user registration, login, product search, and checkout operations.
 
 ## Features
