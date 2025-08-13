@@ -17,6 +17,15 @@ It focuses on automating key functionalities like user registration, login, prod
 * Detailed reporting with Allure, including test logs and screenshots of failed tests.
 * Parallel execution to reduce test execution time.
 
+## Key Results / Metrics
+
+* Created and maintained a comprehensive Software Test Plan and Test Scenarios.  
+* Executed **100+ test cases** covering regression and edge cases.  
+* Automated **critical workflows** including user registration, login, product search, and checkout.  
+* CI/CD pipeline runs tests automatically on every push to GitHub.  
+* Generated detailed Allure reports for each test run.
+
+
 ## Technologies Used
 
 * Selenium WebDriver: Browser automation.
